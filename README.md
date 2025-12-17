@@ -2,14 +2,22 @@
 
 A basic guitar tuner TUI with customizable templates
 
-## Running
+## Installation
 
-There are not binary builds set up yet for this, so it has to be manually run
-for now. There are plans to get this set up soon.
+To build and install, use `make install`
 
-1. `go get .`
-2. `go run . -ls` (to see tuning templates)
-3. `go run . -tuning +template_name`
+The program adds itself under `/usr/bin/` and creates a template config under
+`~/.config/tuner1/standards.txt`.
+
+Uninstallation is just `make uninstall`
+
+## Usage
+
+- `tuner1 -ls`: List templates available
+- `tuner1 -tuning +<template name>`: Launch using a template by name
+- `tuner1 -tuning "<csv of scientific-notation note names from low to high>"`: Launch using a manually-defined CSV tuning
+
+These can also be viewed by invoking `tuner1 -h`
 
 ## Editing templates
 
@@ -26,5 +34,11 @@ It is also possible to test a template csv by manually calling the TUI with
 the template:
 
 ```bash
-go run . -tuning "<csv of scientific-notation note names from low to high>"
+tuner1 -tuning "<csv of scientific-notation note names from low to high>"
 ```
+
+## Running dev environment
+
+1. `go get .`
+2. `go run . -standards config/standards.txt -ls` (to see tuning templates)
+3. `go run . -standards config/standards.txt -tuning +template_name`
