@@ -1,0 +1,12 @@
+e-standard:E2,A2,D3,G3,B3,E4
+eb-standard:Eb2,Ab2,Db3,Gb3,Bb3,Eb4
+d-standard:D2,G2,C3,F3,A3,D4
+c-standard:C2,F2,Bb2,Eb3,G3,C4
+
+drop-d:D2,A2,D3,G3,B3,E4
+drop-c:C2,G2,C3,F3,A3,D4
+
+dtownsend-open-c:C2,G2,C3,G3,C4,E4
+levee-breaks-open-c:C2,F2,C3,F3,A3,C4
+
+opeth-open-dminadd9:D2,A2,D3,F3,A3,E4
