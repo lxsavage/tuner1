@@ -8,8 +8,8 @@ A basic guitar tuner TUI with customizable templates
 
 To build and install, use `make install`.
 
-The program adds itself under `/usr/bin/` and creates a template config under
-`~/.config/tuner1/standards.txt`.
+The program adds itself under `/usr/local/bin/` and creates a template config
+under `~/.config/tuner1/standards.txt`.
 
 Upgrading from a previous version is as simple as pulling the latest changes,
 then running `make upgrade`.
