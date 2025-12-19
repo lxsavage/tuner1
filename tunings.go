@@ -78,8 +78,6 @@ func getTuning(tuning_csv string) ([]Note, error) {
 			return nil, errors.New(msg)
 		}
 
-		fmt.Println("SDF", matches, note)
-
 		pitch := matches[1]
 		octave, err := strconv.Atoi(matches[2])
 		if err != nil {

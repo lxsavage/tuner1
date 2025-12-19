@@ -44,7 +44,8 @@ func main() {
 	}
 
 	if len(*tuning) == 0 {
-		log.Fatal("Please pass in a tuning specifier")
+		fmt.Fprintf(os.Stderr, "Please pass in a tuning specifier")
+		os.Exit(1)
 	}
 
 	var tuning_csv string
@@ -70,6 +71,5 @@ func main() {
 		log.Fatalf("Failed to parse tuning: %s\n", err)
 	}
 
-	// This is an infinite ui render loop
 	ui(tunings, *reference)
 }

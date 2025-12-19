@@ -1,30 +1,94 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"math"
-	"os"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gopxl/beep"
 	"github.com/gopxl/beep/speaker"
 )
 
-func promptOpt() string {
-	fmt.Print("\n> ")
+// TODO - See if possible (and better) to move these into non-global variables
+var (
+	mu   sync.RWMutex
+	freq = 0.0 // off by default
+	pos  = 0
+)
 
-	reader := bufio.NewScanner(os.Stdin)
-	if !reader.Scan() {
-		log.Fatalf("Reached EOF")
+func (m UIModel) Init() tea.Cmd {
+	return nil
+}
+
+func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	selection_changed := false
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c", "q":
+			return m, tea.Quit
+		case "m":
+			if m.selected != -1 {
+				m.selected = -1
+				selection_changed = true
+			}
+		case "up", "k":
+			if m.cursor > 0 {
+				m.cursor--
+			}
+		case "down", "j":
+			if m.cursor < len(m.choices)-1 {
+				m.cursor++
+			}
+		case "enter", " ":
+			if m.selected != m.cursor {
+				m.selected = m.cursor
+				selection_changed = true
+			}
+		}
 	}
 
-	text := strings.TrimSpace(reader.Text())
-	return text
+	if selection_changed && m.selected < len(m.choices) {
+		var newFreq float64 = 0
+		if m.selected >= 0 {
+			var err error
+			newFreq, err = pitchOf(m.choices[m.selected], m.a4)
+
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		mu.Lock()
+		freq = newFreq
+		mu.Unlock()
+	}
+
+	return m, nil
+}
+
+func (m UIModel) View() string {
+	s := "tuner1\n\n"
+
+	for i, choice := range m.choices {
+		cursor := " "
+		if m.cursor == i {
+			cursor = ">"
+		}
+
+		checked := " "
+		if m.selected == i {
+			checked = "X"
+		}
+
+		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
+	}
+
+	s += "\n[← ↑ ↓ →/hjkl] - move, [space/enter] - select, m - mute, q - quit\n"
+	return s
 }
 
 func ui(tunings []Note, a4 float64) {
@@ -33,12 +97,6 @@ func ui(tunings []Note, a4 float64) {
 	const sampleRate = 44100
 	sr := beep.SampleRate(sampleRate)
 	speaker.Init(sr, sr.N(time.Second/10))
-
-	var (
-		mu   sync.RWMutex
-		freq = 0.0 // off by default
-		pos  = 0
-	)
 
 	// This function generates the actual sound wave
 	streamer := beep.StreamerFunc(func(samples [][2]float64) (int, bool) {
@@ -58,62 +116,8 @@ func ui(tunings []Note, a4 float64) {
 	speaker.Play(streamer)
 	//#endregion
 
-	// Setup printing
-	mode := 0
-
-	for {
-		// Move writing cursor back to top
-		fmt.Print("\033[H\033[2J")
-
-		fmt.Println("[ q] exit")
-		if mode == 0 {
-			fmt.Println("[!0] off")
-		} else {
-			fmt.Println("[ 0] off")
-		}
-
-		for i := range tunings {
-			note := tunings[i]
-
-			fmt.Print("[")
-			if mode-1 == i {
-				fmt.Print("!")
-			} else {
-				fmt.Print(" ")
-			}
-
-			fmt.Printf("%d] %s\n", i+1, note)
-		}
-
-		//#region Command processing
-		opt := promptOpt()
-
-		if opt == "q" {
-			break
-		}
-
-		opt_int, err := strconv.Atoi(opt)
-		if err != nil {
-			continue
-		}
-		//#endregion
-
-		if opt_int >= 0 && opt_int <= len(tunings) {
-			mode = opt_int
-			var newFreq float64
-			if mode == 0 {
-				newFreq = 0.0
-			} else {
-				var err error
-				newFreq, err = pitchOf(tunings[mode-1], a4)
-				if err != nil {
-					log.Fatal(err)
-				}
-			}
-
-			mu.Lock()
-			freq = newFreq
-			mu.Unlock()
-		}
+	ui := tea.NewProgram(initialModel(tunings, a4))
+	if _, err := ui.Run(); err != nil {
+		log.Fatalf("Critial error when running TUI:\n%s", err)
 	}
 }
