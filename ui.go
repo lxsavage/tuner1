@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -14,9 +16,14 @@ import (
 
 // TODO - See if possible (and better) to move these into non-global variables
 var (
-	mu   sync.RWMutex
-	freq = 0.0 // off by default
-	pos  = 0
+	// Mutex for adjusting sine wave frequency
+	mu sync.RWMutex
+
+	// Current sine wave frequency in Hz
+	freq = 0.0
+
+	// The position of the sine wave to encode in the current sample
+	pos = 0
 )
 
 func (m UIModel) Init() tea.Cmd {
@@ -48,6 +55,16 @@ func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.selected = m.cursor
 				selection_changed = true
 			}
+		case "1", "2", "3", "4", "5", "6", "7", "8", "9":
+			num, err := strconv.Atoi(msg.String())
+			if err != nil {
+				break
+			}
+
+			if num > 0 && num <= len(m.choices) {
+				m.selected = num - 1
+				selection_changed = true
+			}
 		}
 	}
 
@@ -71,7 +88,13 @@ func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m UIModel) View() string {
-	s := "tuner1\n\n"
+	var s strings.Builder
+
+	s.WriteString("tuner1")
+	if m.selected >= 0 {
+		s.WriteString(" 📢")
+	}
+	s.WriteString("\n\n")
 
 	for i, choice := range m.choices {
 		cursor := " "
@@ -84,32 +107,40 @@ func (m UIModel) View() string {
 			checked = "X"
 		}
 
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
+		fmt.Fprintf(&s, "%d %s [%s] %s\n", i+1, cursor, checked, choice)
 	}
 
-	s += "\n[← ↑ ↓ →/hjkl] - move, [space/enter] - select, m - mute, q - quit\n"
-	return s
+	s.WriteString("\n[")
+	for i := range m.choices {
+		s.WriteString(strconv.Itoa(i + 1))
+	}
+
+	s.WriteString("] - select string by #\n")
+	s.WriteString("[← ↑ ↓ →/hjkl] - move, [space/enter] - select, m - mute, q - quit\n")
+
+	return s.String()
 }
 
-func ui(tunings []Note, a4 float64) {
+func startUI(tunings []Note, a4 float64) {
 	//#region Audio
 	// TODO: Clean up sine wave streaming/playing code here
 	const sampleRate = 44100
 	sr := beep.SampleRate(sampleRate)
 	speaker.Init(sr, sr.N(time.Second/10))
 
-	// This function generates the actual sound wave
 	streamer := beep.StreamerFunc(func(samples [][2]float64) (int, bool) {
 		mu.RLock()
 		f := freq
 		mu.RUnlock()
 
+		// Generate a sine wave
 		for i := range samples {
 			v := math.Sin(2 * math.Pi * float64(pos) * f / sampleRate)
 			samples[i][0] = v
 			samples[i][1] = v
 			pos++
 		}
+
 		return len(samples), true
 	})
 
@@ -118,6 +149,6 @@ func ui(tunings []Note, a4 float64) {
 
 	ui := tea.NewProgram(initialModel(tunings, a4))
 	if _, err := ui.Run(); err != nil {
-		log.Fatalf("Critial error when running TUI:\n%s", err)
+		log.Fatalf("Critial error when running the tuner1 TUI:\n%s", err)
 	}
 }

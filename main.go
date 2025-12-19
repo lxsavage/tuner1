@@ -8,6 +8,25 @@ import (
 	"path/filepath"
 )
 
+func getHomeStandardsFilePath() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return filepath.Join(home, ".config", "tuner1", "standards.txt")
+}
+
+func listTemplates(path_std_file string) {
+	std_file, err := os.Open(path_std_file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Print(SprintStandards(std_file))
+	std_file.Close()
+}
+
 func main() {
 	template := flag.Bool("ls", false, "list templates")
 	tuning := flag.String("tuning", "", "a CSV list of notes for a tuning, or '+' followed by a template name")
@@ -23,23 +42,11 @@ func main() {
 
 	path_std_file := *standards
 	if len(path_std_file) == 0 && (*template || ((len(*tuning) > 0) && (*tuning)[0] == '+')) {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		path_std_file = filepath.Join(home, ".config", "tuner1", "standards.txt")
+		path_std_file = getHomeStandardsFilePath()
 	}
 
 	if *template {
-		std_file, err := os.Open(path_std_file)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Print(SprintStandards(std_file))
-		std_file.Close()
-
+		listTemplates(path_std_file)
 		os.Exit(0)
 	}
 
@@ -48,7 +55,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	var tuning_csv string
+	tuning_csv := *tuning
 	if (*tuning)[0] == '+' {
 		std_file, err := os.Open(path_std_file)
 		if err != nil {
@@ -62,8 +69,6 @@ func main() {
 		}
 
 		tuning_csv = csv
-	} else {
-		tuning_csv = *tuning
 	}
 
 	tunings, err := getTuning(tuning_csv)
@@ -71,5 +76,5 @@ func main() {
 		log.Fatalf("Failed to parse tuning: %s\n", err)
 	}
 
-	ui(tunings, *reference)
+	startUI(tunings, *reference)
 }

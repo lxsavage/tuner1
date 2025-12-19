@@ -63,8 +63,7 @@ func getStandard(std_file *os.File, name string) (string, error) {
 func getTuning(tuning_csv string) ([]Note, error) {
 	tunings_raw := strings.Split(tuning_csv, ",")
 	var tunings []Note
-	for i := range tunings_raw {
-		note := tunings_raw[i]
+	for _, note := range tunings_raw {
 		matches := re_valid_note.FindStringSubmatch(note)
 		if len(matches) != 3 {
 			msg := "invalid note: " + note
