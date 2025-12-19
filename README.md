@@ -4,18 +4,22 @@ A basic guitar tuner TUI with customizable templates
 
 ## Installation
 
-To build and install, use `make install`
+To build and install, use `make install`.
 
 The program adds itself under `/usr/bin/` and creates a template config under
 `~/.config/tuner1/standards.txt`.
 
-Uninstallation is just `make uninstall`
+Upgrading from a previous version is as simple as pulling the latest changes,
+then running `make upgrade`.
+
+Uninstallation is just `make uninstall`.
 
 ## Usage
 
 - `tuner1 -ls`: List templates available
 - `tuner1 -tuning +<template name>`: Launch using a template by name
-- `tuner1 -tuning "<csv of scientific-notation note names from low to high>"`: Launch using a manually-defined CSV tuning
+- `tuner1 -tuning "<csv of scientific-notation note names from low to high>"`:
+  Launch using a manually-defined CSV tuning
 
 These can also be viewed by invoking `tuner1 -h`
 
