@@ -14,6 +14,10 @@ then running `make upgrade`.
 
 Uninstallation is just `make uninstall`.
 
+**Note: by default, this will be installed under `/usr/local/bin`. This can be
+changed by adjusting the makefile `INSTALL_DIR` variable to the intended path
+before running any of these make commands.**
+
 ## Usage
 
 - `tuner1 -ls`: List templates available
