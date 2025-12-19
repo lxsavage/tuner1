@@ -1,5 +1,7 @@
 # tuner1
 
+![Product demo](/assets/demo.gif)
+
 A basic guitar tuner TUI with customizable templates
 
 ## Installation
