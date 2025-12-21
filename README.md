@@ -14,7 +14,7 @@ A basic guitar tuner TUI with customizable templates
 #### Install (MacOS and Linux x64)
 
 ```sh
-curl https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/scripts/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/scripts/install.sh | bash
 ```
 
 If this install script does not support your platform, the program will have
@@ -26,7 +26,7 @@ and will be included in the next major version.
 #### Uninstall
 
 ```sh
-curl https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/scripts/uninstall.sh | bash
+curl -sSL https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/scripts/uninstall.sh | bash
 ```
 
 ### Manual Build/Install

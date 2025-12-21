@@ -51,7 +51,7 @@ func main() {
 	}
 
 	if len(*tuning) == 0 {
-		fmt.Fprintf(os.Stderr, "Please pass in a tuning specifier")
+		fmt.Fprintf(os.Stderr, "Please pass in a tuning specifier\n")
 		os.Exit(1)
 	}
 
