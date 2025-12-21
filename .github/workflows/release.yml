@@ -36,8 +36,15 @@ jobs:
           ARCH=$([[ "${{ runner.arch }}" == "X64" ]] && echo "amd64" || echo "arm64")
           mv dist/tuner1 dist/tuner1-${OS}-${ARCH}
 
-      - name: Upload release asset
+      - name: Create release with Release Notes (MacOS Only)
+        uses: softprops/action-gh-release@v2
+        if: matrix.os == 'macos-latest'
+        with:
+          files: dist/tuner1-darwin-amd64
+          generate_release_notes: true
+
+      - name: Attach binary to existing release (Non-MacOS)
+        if: matrix.os != 'macos-latest'
         uses: softprops/action-gh-release@v2
         with:
           files: dist/tuner1-*
-          generate_release_notes: true
