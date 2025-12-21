@@ -1,0 +1,43 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ALSA dev libs (Linux only)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.5"
+
+      - name: Build release binary
+        run: |
+          mkdir -p dist
+          go build -v -ldflags "-s -w" -o dist/tuner1 ./...
+
+      - name: Rename binary for release
+        run: |
+          OS=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
+          ARCH=$([[ "${{ runner.arch }}" == "X64" ]] && echo "amd64" || echo "arm64")
+          mv dist/tuner1 dist/tuner1-${OS}-${ARCH}
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/tuner1-*
+          generate_release_notes: true
