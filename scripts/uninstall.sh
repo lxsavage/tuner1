@@ -11,13 +11,6 @@ if [[ ! -x "$BINARY_PATH" ]]; then
   exit 0
 fi
 
-read -p "Remove $BINARY_PATH? [y/N] " -n 1 -r
-echo ""
-
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  rm -f "$BINARY_PATH"
-  echo "$BINARY removed."
-  printf "To remove the standards file, run:\n$ rm $HOME/.config/tuner1/standards.txt\n"
-else
-  echo "Uninstall cancelled."
-fi
+rm -f "$BINARY_PATH"
+echo "$BINARY removed."
+printf "To remove the standards file, run:\n$ rm $HOME/.config/tuner1/standards.txt\n"
