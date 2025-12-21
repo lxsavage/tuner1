@@ -23,11 +23,11 @@ install: upgrade
 	cp config/standards.txt $(HOME)/.config/tuner1/
 
 upgrade: $(BINARY)
-	cp $(BINARY) /usr/local/bin/
+	sudo cp $(BINARY) /usr/local/bin/
 
 uninstall:
-	rm -rf $(HOME)/.config/tuner1/
-	rm -rf /usr/local/bin/$(DIST)
+	sudo rm -rf /usr/local/bin/$(DIST)
+	@printf "\nTo remove config file, run:\n$$ rm -rf $(HOME)/.config/tuner1/\n"
 
 clean:
 	rm -rf dist

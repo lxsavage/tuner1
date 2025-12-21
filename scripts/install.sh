@@ -43,11 +43,17 @@ curl -sSL "$URL" -o "$TMP/$ASSET"
 chmod +x "$TMP/$ASSET"
 mv "$TMP/$ASSET" "$INSTALL_DIR/$BINARY"
 
-# ---- 5. Pull the latest standards.txt into .config/tuner1
+# ---- 5. Pull the latest standards.txt into .config/tuner1 if not already there
 mkdir -p $HOME/.config && mkdir -p $HOME/.config/tuner1
-curl -sSL \
-  "https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/config/standards.txt" \
-  -o "$HOME/.config/tuner1/standards.txt"
+STANDARDSFILE="$HOME/.config/tuner1/standards.txt"
+
+if [ ! -e "$STANDARDSFILE" ]; then
+  curl -sSL \
+    "https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/config/standards.txt" \
+    -o "$STANDARDSFILE" --no-clobber
+else
+    echo "Standards file already exists locally. Skipping download."
+fi
 
 # ---- 5. Final message ----
 echo "$BINARY installed to $INSTALL_DIR/$BINARY and standards.txt to $HOME/.config/tuner1/standards.txt"
