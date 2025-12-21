@@ -14,17 +14,37 @@ import (
 	"github.com/gopxl/beep/speaker"
 )
 
-// TODO - See if possible (and better) to move these into non-global variables
+const (
+	ANSI_RESET   = "\033[0m"
+	ANSI_BG_BLUE = "\033[44m"
+)
+
+const sample_rate = 44100 // Hz
+
 var (
-	// Mutex for adjusting sine wave frequency
-	mu sync.RWMutex
+	freq    = 0.0 // Hz
+	mu_freq sync.RWMutex
 
-	// Current sine wave frequency in Hz
-	freq = 0.0
-
-	// The position of the sine wave to encode in the current sample
+	// Current position in the sine wave being generated
 	pos = 0
 )
+
+// Generate a sine wave in place in samples. Returns the amount of samples
+// after the operation, as well as if the operation was successful.
+func generateSineWave(samples [][2]float64) (int, bool) {
+	mu_freq.RLock()
+	f := freq
+	mu_freq.RUnlock()
+
+	for i := range samples {
+		v := math.Sin(2 * math.Pi * float64(pos) * f / sample_rate)
+		samples[i][0] = v
+		samples[i][1] = v
+		pos++
+	}
+
+	return len(samples), true
+}
 
 func (m UIModel) Init() tea.Cmd {
 	return nil
@@ -50,19 +70,30 @@ func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.cursor < len(m.choices)-1 {
 				m.cursor++
 			}
-		case "enter", " ":
-			if m.selected != m.cursor {
-				m.selected = m.cursor
-				selection_changed = true
+		case "left", "h":
+			if m.selected < 0 {
+				m.selected = len(m.choices) - 1
+			} else {
+				m.selected = (m.selected - 1 + len(m.choices)) % len(m.choices)
 			}
+
+			selection_changed = true
+		case "right", "l":
+			m.selected = max((m.selected+1)%len(m.choices), 0)
+			selection_changed = true
 		case "1", "2", "3", "4", "5", "6", "7", "8", "9":
 			num, err := strconv.Atoi(msg.String())
 			if err != nil {
 				break
 			}
 
-			if num > 0 && num <= len(m.choices) {
+			if num <= len(m.choices) {
 				m.selected = num - 1
+				selection_changed = true
+			}
+		case "enter", " ":
+			if m.selected != m.cursor {
+				m.selected = m.cursor
 				selection_changed = true
 			}
 		}
@@ -79,9 +110,9 @@ func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		mu.Lock()
+		mu_freq.Lock()
 		freq = newFreq
-		mu.Unlock()
+		mu_freq.Unlock()
 	}
 
 	return m, nil
@@ -97,17 +128,17 @@ func (m UIModel) View() string {
 	s.WriteString("\n\n")
 
 	for i, choice := range m.choices {
-		cursor := " "
+		line_highlight := ""
 		if m.cursor == i {
-			cursor = ">"
+			line_highlight = ANSI_BG_BLUE
 		}
 
 		checked := " "
 		if m.selected == i {
-			checked = "X"
+			checked = "•"
 		}
 
-		fmt.Fprintf(&s, "%d %s [%s] %s\n", i+1, cursor, checked, choice)
+		fmt.Fprintf(&s, "%s%s%d  %s%s\n", line_highlight, checked, i+1, choice, ANSI_RESET)
 	}
 
 	s.WriteString("\n[")
@@ -115,39 +146,20 @@ func (m UIModel) View() string {
 		s.WriteString(strconv.Itoa(i + 1))
 	}
 
-	s.WriteString("] - select string by #\n")
-	s.WriteString("[← ↑ ↓ →/hjkl] - move, [space/enter] - select, m - mute, q - quit\n")
+	s.WriteString("] - select string by #, [← →/hl] - previous/next string\n")
+	s.WriteString("[↑ ↓/jk] - move, [space/enter] - select, m - mute, q - quit\n")
 
 	return s.String()
 }
 
 func startUI(tunings []Note, a4 float64) {
-	//#region Audio
-	// TODO: Clean up sine wave streaming/playing code here
-	const sampleRate = 44100
-	sr := beep.SampleRate(sampleRate)
+	sr := beep.SampleRate(sample_rate)
 	speaker.Init(sr, sr.N(time.Second/10))
 
-	streamer := beep.StreamerFunc(func(samples [][2]float64) (int, bool) {
-		mu.RLock()
-		f := freq
-		mu.RUnlock()
-
-		// Generate a sine wave
-		for i := range samples {
-			v := math.Sin(2 * math.Pi * float64(pos) * f / sampleRate)
-			samples[i][0] = v
-			samples[i][1] = v
-			pos++
-		}
-
-		return len(samples), true
-	})
-
+	streamer := beep.StreamerFunc(generateSineWave)
 	speaker.Play(streamer)
-	//#endregion
 
-	ui := tea.NewProgram(initialModel(tunings, a4))
+	ui := tea.NewProgram(InitialUIModel(tunings, a4))
 	if _, err := ui.Run(); err != nil {
 		log.Fatalf("Critial error when running the tuner1 TUI:\n%s", err)
 	}
