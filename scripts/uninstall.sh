@@ -1,4 +1,3 @@
-#!/bin/sh
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -13,8 +12,8 @@ if [[ ! -x "$BINARY_PATH" ]]; then
 fi
 
 read -p "Remove $BINARY_PATH? [y/N] " -n 1 -r
-
 echo ""
+
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   rm -f "$BINARY_PATH"
   echo "$BINARY removed."
