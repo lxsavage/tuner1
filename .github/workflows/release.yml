@@ -27,8 +27,9 @@ jobs:
 
       - name: Build release binary
         run: |
+          TAG=${GITHUB_REF#refs/tags/}
           mkdir -p dist
-          go build -v -ldflags "-s -w" -o dist/tuner1 ./...
+          go build -v -ldflags "-s -w -X main.Version=$TAG" -o dist/tuner1 ./...
 
       - name: Rename binary for release
         run: |

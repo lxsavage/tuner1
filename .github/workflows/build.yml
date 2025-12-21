@@ -26,8 +26,9 @@ jobs:
 
       - name: Build
         run: |
+          VERSION="build-${GITHUB_RUN_NUMBER}-${GITHUB_SHA::7}"
           mkdir -p dist
-          go build -v -o dist/tuner1 ./...
+          go build -v -ldflags "-s -w -X main.Version=$VERSION" -o dist/tuner1 ./...
 
       - name: Test
         run: go test -v ./...

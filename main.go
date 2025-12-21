@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 )
 
+var Version = "localbuild"
+
 func getHomeStandardsFilePath() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -28,6 +30,7 @@ func listTemplates(path_std_file string) {
 }
 
 func main() {
+	version := flag.Bool("version", false, "display the program version")
 	template := flag.Bool("ls", false, "list templates")
 	tuning := flag.String("tuning", "", "a CSV list of notes for a tuning, or '+' followed by a template name")
 	reference := flag.Float64("A4", 440.0, "the reference pitch to tune A4 to in Hertz")
@@ -39,6 +42,11 @@ func main() {
 	}
 
 	flag.Parse()
+
+	if *version {
+		fmt.Printf("%s\n", Version)
+		os.Exit(0)
+	}
 
 	path_std_file := *standards
 	if len(path_std_file) == 0 && (*template || ((len(*tuning) > 0) && (*tuning)[0] == '+')) {
