@@ -2,9 +2,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-#!/usr/bin/env bash
-set -euo pipefail
-
 BINARY="tuner1"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 
@@ -16,7 +13,8 @@ if [[ ! -x "$BINARY_PATH" ]]; then
 fi
 
 read -p "Remove $BINARY_PATH? [y/N] " -n 1 -r
-echo
+
+echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   rm -f "$BINARY_PATH"
   echo "$BINARY removed."

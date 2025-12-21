@@ -26,7 +26,7 @@ and will be included in the next major version.
 #### Uninstall
 
 ```sh
-curl hhttps://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/scripts/uninstall.sh | bash
+curl https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/scripts/uninstall.sh | bash
 ```
 
 ### Manual Build/Install
