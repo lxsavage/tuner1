@@ -4,7 +4,8 @@
 
 A basic guitar tuner TUI with customizable templates
 
-[![build](https://github.com/lxsavage/tuner1/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/lxsavage/tuner1/actions/workflows/build.yml) [![release](https://github.com/lxsavage/tuner1/releases/latest)](https://img.shields.io/github/v/release/lxsavage/tuner1)
+[![build](https://github.com/lxsavage/tuner1/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/lxsavage/tuner1/actions/workflows/build.yml)
+![GitHub Release](https://img.shields.io/github/v/release/lxsavage/tuner1)
 
 ## Installation
 
