@@ -40,7 +40,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: matrix.os == 'macos-latest'
         with:
-          files: dist/tuner1-macos-amd64
+          files: dist/tuner1-macos-arm64
           generate_release_notes: true
 
       - name: Attach binary to existing release (Non-MacOS)
