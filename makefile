@@ -27,7 +27,7 @@ upgrade: $(BINARY)
 
 uninstall:
 	rm -rf $(HOME)/.config/tuner1/
-	rm -rf /user/local/bin/$(DIST)
+	rm -rf /usr/local/bin/$(DIST)
 
 clean:
 	rm -rf dist

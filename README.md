@@ -4,7 +4,39 @@
 
 A basic guitar tuner TUI with customizable templates
 
+[![build](https://github.com/lxsavage/tuner1/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/lxsavage/tuner1/actions/workflows/build.yml) [![release](https://github.com/lxsavage/tuner1/releases/latest)](https://img.shields.io/github/v/release/lxsavage/tuner1)
+
 ## Installation
+
+### Scripts
+
+#### Install (MacOS and Linux x64)
+
+```sh
+curl https://github.com/lxsavage/tuner1/tree/main/scripts/install.sh | bash
+```
+
+If this install script does not support your platform, the program will have
+to be [manually built and installed](#manual-buildinstall). If you think your
+platform should be included, create an issue for it and I will consider adding
+it to the next version. Note that a Windows build is currently being worked on
+and will be included in the next major version.
+
+#### Uninstall
+
+```sh
+curl https://github.com/lxsavage/tuner1/tree/main/scripts/uninstall.sh | bash
+```
+
+### Manual Build/Install
+
+In order to build this project, the go CLI needs to be installed and on path.
+For more information on how to do this, check the
+[go install guide](https://go.dev/doc/install)
+
+**Note for Linux systems: the build depends on `libasound2-dev`,
+which will also need to be installed through your respective package
+manager.**
 
 To build and install, use `make install`.
 
