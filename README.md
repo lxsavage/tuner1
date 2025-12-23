@@ -64,12 +64,17 @@ These can also be viewed by invoking `tuner1 -h`
 
 ## Editing templates
 
-To change templates, edit config/standards.txt to add/remove K:V pairs for
+To change templates, edit standards.txt to add/remove K:V pairs for
 templates in the format:
 
 ```plain
 <template name>:<csv of scientific-notation note names from low to high>
 ```
+
+This file is by default located at:
+
+- Linux: ~/.config/tuner1/standards.txt
+- MacOS: ~/Library/Application Support/tuner1/standards.txt
 
 Afterwards, call the template with `go run . -tuning +<template name>`
 
