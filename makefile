@@ -19,15 +19,21 @@ $(BINARY): $(GOFILES) $(GOMOD) $(GOSUM) config/standards.txt
 
 # ---- Install / upgrade / uninstall / clean ----------------------------------
 install: upgrade
-	mkdir -p $(HOME)/.config/tuner1/
-	cp config/standards.txt $(HOME)/.config/tuner1/
+	set -x; \
+	mkdir -p $(HOME)/.config/tuner1/; \
+	OS=$$(uname -s | tr '[:upper:]' '[:lower:]'); \
+	CONFIG_DIR=$$HOME/.config; \
+	if [ "$$OS" = darwin ]; then \
+		CONFIG_DIR="$$HOME/Library/Application Support"; \
+	fi; \
+	mkdir -p "$$CONFIG_DIR/tuner1/"; \
+	cp -n config/standards.txt "$$CONFIG_DIR/tuner1/standards.txt"
 
 upgrade: $(BINARY)
 	sudo cp $(BINARY) /usr/local/bin/
 
 uninstall:
 	sudo rm -rf /usr/local/bin/$(DIST)
-	@printf "\nTo remove config file, run:\n$$ rm -rf $(HOME)/.config/tuner1/\n"
 
 clean:
 	rm -rf dist

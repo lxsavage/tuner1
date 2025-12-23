@@ -43,20 +43,27 @@ curl -sSL "$URL" -o "$TMP/$ASSET"
 chmod +x "$TMP/$ASSET"
 mv "$TMP/$ASSET" "$INSTALL_DIR/$BINARY"
 
-# ---- 5. Pull the latest standards.txt into .config/tuner1 if not already there
-mkdir -p $HOME/.config && mkdir -p $HOME/.config/tuner1
-STANDARDSFILE="$HOME/.config/tuner1/standards.txt"
+# ---- 5. Pull the latest standards.txt into the tuner1 config dir if not already there
+CONFIG_DIR=$HOME/.config
+if [[ $OS -eq darwin ]]; then
+  CONFIG_DIR="$HOME/Library/Application Support"
+else
+  mkdir -p $CONFIG_DIR
+fi
 
-if [ ! -e "$STANDARDSFILE" ]; then
+mkdir -p $CONFIG_DIR/tuner1
+STANDARDS_FILE="$CONFIG_DIR/tuner1/standards.txt"
+
+if [ ! -e "$STANDARDS_FILE" ]; then
   curl -sSL \
     "https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/config/standards.txt" \
-    -o "$STANDARDSFILE" --no-clobber
+    -o "$STANDARDS_FILE" --no-clobber
 else
     echo "Standards file already exists locally. Skipping download."
 fi
 
 # ---- 5. Final message ----
-echo "$BINARY installed to $INSTALL_DIR/$BINARY and standards.txt to $HOME/.config/tuner1/standards.txt"
+echo "$BINARY installed to $INSTALL_DIR/$BINARY and standards.txt to $STANDARDS_FILE"
 if ! command -v "$BINARY" >/dev/null 2>&1; then
   echo "Add $INSTALL_DIR to your PATH, e.g.:"
   echo "  export PATH=\"$INSTALL_DIR:\$PATH\""

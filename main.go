@@ -10,13 +10,13 @@ import (
 
 var Version = "localbuild"
 
-func getHomeStandardsFilePath() string {
-	home, err := os.UserHomeDir()
+func getStandardsConfigFilepath() string {
+	config_dir, err := os.UserConfigDir()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return filepath.Join(home, ".config", "tuner1", "standards.txt")
+	return filepath.Join(config_dir, "tuner1", "standards.txt")
 }
 
 func listTemplates(path_std_file string) {
@@ -50,7 +50,7 @@ func main() {
 
 	path_std_file := *standards
 	if len(path_std_file) == 0 && (*template || ((len(*tuning) > 0) && (*tuning)[0] == '+')) {
-		path_std_file = getHomeStandardsFilePath()
+		path_std_file = getStandardsConfigFilepath()
 	}
 
 	if *template {
