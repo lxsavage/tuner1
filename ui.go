@@ -24,10 +24,9 @@ const sample_rate = 44100 // Hz
 var (
 	freq    = 0.0 // Hz
 	mu_freq sync.RWMutex
-
-	// Current position in the sine wave being generated
-	pos = 0
 )
+
+var wave_pos = 0
 
 // Generate a sine wave in place in samples. Returns the amount of samples
 // after the operation, as well as if the operation was successful.
@@ -37,10 +36,10 @@ func generateSineWave(samples [][2]float64) (int, bool) {
 	mu_freq.RUnlock()
 
 	for i := range samples {
-		v := math.Sin(2 * math.Pi * float64(pos) * f / sample_rate)
+		v := math.Sin(2 * math.Pi * float64(wave_pos) * f / sample_rate)
 		samples[i][0] = v
 		samples[i][1] = v
-		pos++
+		wave_pos++
 	}
 
 	return len(samples), true
@@ -159,7 +158,7 @@ func startUI(tunings []Note, a4 float64) {
 	streamer := beep.StreamerFunc(generateSineWave)
 	speaker.Play(streamer)
 
-	ui := tea.NewProgram(InitialUIModel(tunings, a4))
+	ui := tea.NewProgram(InitialUIModel(tunings, a4), tea.WithAltScreen())
 	if _, err := ui.Run(); err != nil {
 		log.Fatalf("Critial error when running the tuner1 TUI:\n%s", err)
 	}
