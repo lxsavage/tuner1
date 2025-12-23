@@ -25,6 +25,7 @@ jobs:
           go-version: "1.25.5"
 
       - name: Build
+        shell: bash
         run: |
           VERSION="build-${GITHUB_RUN_NUMBER}-${GITHUB_SHA::7}"
           mkdir -p dist
