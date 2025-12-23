@@ -35,9 +35,9 @@ In order to build this project, the go CLI needs to be installed and on path.
 For more information on how to do this, check the
 [go install guide](https://go.dev/doc/install)
 
-**Note for Linux systems: the build depends on `libasound2-dev`,
-which will also need to be installed through your respective package
-manager.**
+**Note for Linux systems: the build depends on the ALSA dev library (i.e.
+`libasound2-dev` on Ubuntu), which will also need to be installed through your
+respective package manager.**
 
 To build and install, use `make install`.
 
