@@ -20,8 +20,7 @@ curl -sSL https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/scri
 If this install script does not support your platform, the program will have
 to be [manually built and installed](#manual-buildinstall). If you think your
 platform should be included, create an issue for it and I will consider adding
-it to the next version. Note that a Windows build is currently being worked on
-and will be included in the next major version.
+it to the next version.
 
 #### Uninstall
 
