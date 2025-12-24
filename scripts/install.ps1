@@ -63,14 +63,29 @@ if (-not (Test-Path $StandardsFile)) {
     Write-Host "Standards file already exists locally. Skipping download."
 }
 
-# ---- 7. Final message ----
+# ---- 7. PATH check and auto-add if needed ----
+$PathDirs = $env:Path -split ';' | ForEach-Object { $_.TrimEnd('\') }
+
+if ($PathDirs -notcontains $InstallDir.TrimEnd('\')) {
+    Write-Warning "`n$InstallDir is not currently in your PATH."
+
+    try {
+        # Append for current session
+        $env:Path = "$env:Path;$InstallDir"
+
+        # Persist for future shells (per-user, non-admin)
+        setx PATH "$($env:Path)" | Out-Null
+
+        Write-Host "Added $InstallDir to your user PATH."
+        Write-Host "You may need to restart your terminal for this change to take effect."
+    } catch {
+        Write-Warning "Failed to update PATH automatically. You can add it manually with:"
+        Write-Host "  setx PATH `"$($env:Path);$InstallDir`""
+    }
+} else {
+    Write-Host "`n$InstallDir is already in your PATH."
+}
+
+# ---- 8. Final message ----
 Write-Host "`n$Binary installed to: $DestFile"
 Write-Host "standards.txt located at: $StandardsFile"
-
-# ---- 8. PATH check ----
-$PathDirs = $env:Path -split ';'
-if ($PathDirs -notcontains $InstallDir) {
-    Write-Warning "`n$InstallDir is not in your PATH."
-    Write-Host "To add it to your current session, run:"
-    Write-Host "  setx PATH `"$($env:Path);$InstallDir`""
-}
