@@ -13,10 +13,8 @@ A basic guitar tuner TUI with customizable templates
 
 #### Install
 
-If this install script does not support your platform, the program will have
-to be [manually built and installed](#manual-buildinstall). If you think your
-platform should be included, create an issue for it and I will consider adding
-it to the next version.
+If this install script does not support your platform/architecture, the program
+will have to be [manually built and installed](#manual-buildinstall).
 
 ##### MacOS and Linux
 
@@ -46,11 +44,11 @@ irm "https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/scripts/u
 
 ### Manual Build/Install
 
-In order to build this project, the go CLI needs to be installed and on path.
-For more information on how to do this, check the
-[go install guide](https://go.dev/doc/install)
+In order to build this project, the Golang CLI needs to be installed and on
+path. For more information on how to do this, check the
+[Golang install guide](https://go.dev/doc/install).
 
-**Note for Linux systems: the build depends on the ALSA dev library (i.e.
+**Note for Linux systems: the build depends on the ALSA dev library (e.g.
 `libasound2-dev` on Ubuntu), which will also need to be installed through your
 respective package manager.**
 
@@ -70,12 +68,13 @@ before running any of these make commands.**
 
 ## Usage
 
+For most use cases, these commands will be sufficient, but additional features
+can be shown with `tuner1 -h`.
+
 - `tuner1 -ls`: List templates available
 - `tuner1 -tuning +<template name>`: Launch using a template by name
 - `tuner1 -tuning "<csv of scientific-notation note names from low to high>"`:
   Launch using a manually-defined CSV tuning
-
-These can also be viewed by invoking `tuner1 -h`
 
 ## Editing templates
 
@@ -88,9 +87,9 @@ templates in the format:
 
 This file is by default located at:
 
-- MacOS: ~/Library/Application Support/tuner1/standards.txt
-- Linux: ~/.config/tuner1/standards.txt
-- Windows: %APPDATA%/tuner1/standards.txt
+- MacOS: `~/Library/Application Support/tuner1/standards.txt`
+- Linux: `~/.config/tuner1/standards.txt`
+- Windows: `%APPDATA%\tuner1\standards.txt`
 
 Afterwards, call the template with `go run . -tuning +<template name>`
 

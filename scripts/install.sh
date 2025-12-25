@@ -45,7 +45,7 @@ mv "$TMP/$ASSET" "$INSTALL_DIR/$BINARY"
 
 # ---- 5. Pull the latest standards.txt into the tuner1 config dir if not already there
 CONFIG_DIR=$HOME/.config
-if [[ $OS -eq darwin ]]; then
+if [ $OS = "macos" ]; then
   CONFIG_DIR="$HOME/Library/Application Support"
 else
   mkdir -p $CONFIG_DIR
