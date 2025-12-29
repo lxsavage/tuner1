@@ -16,13 +16,13 @@ A basic guitar tuner TUI with customizable templates
 If this install script does not support your platform/architecture, the program
 will have to be [manually built and installed](#manual-buildinstall).
 
-##### MacOS and Linux
+MacOS and Linux
 
 ```sh
 curl -sSL https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/scripts/install.sh | bash
 ```
 
-##### Windows
+Windows
 
 ```powershell
 irm "https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/scripts/install.ps1" | iex
@@ -30,13 +30,13 @@ irm "https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/scripts/i
 
 #### Uninstall
 
-##### MacOS and Linux
+MacOS and Linux
 
 ```sh
 curl -sSL https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/scripts/uninstall.sh | bash
 ```
 
-##### Windows
+Windows
 
 ```powershell
 irm "https://raw.githubusercontent.com/lxsavage/tuner1/refs/heads/main/scripts/uninstall.ps1" | iex
@@ -93,15 +93,21 @@ This file is by default located at:
 
 Afterwards, call the template with `go run . -tuning +<template name>`
 
+---
+
 It is also possible to test a template csv by manually calling the TUI with
 the template:
 
-```bash
+```sh
 tuner1 -tuning "<csv of scientific-notation note names from low to high>"
 ```
 
-## Running dev environment
+For example, the following is equivalent to the `+e-standard` template:
 
-1. `go get .`
-2. `go run . -standards config/standards.txt -ls` (to see tuning templates)
-3. `go run . -standards config/standards.txt -tuning +template_name`
+```sh
+tuner1 -tuning "E2,A2,D3,G3,B3,E4"
+```
+
+## Contributing
+
+See [CONTRIBUTING](CONTRIBUTING.md)
