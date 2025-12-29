@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
 BINARY="tuner1"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"

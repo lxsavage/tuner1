@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
 REPO="lxsavage/tuner1"
 BINARY="tuner1"
