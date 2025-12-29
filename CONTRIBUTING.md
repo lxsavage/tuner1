@@ -13,14 +13,17 @@ possible.
 
 ## Submitting a Pull Request
 
-Before submitting a PR, ensure that the following are true about your change,
+Before submitting a PR, make sure your change passes all of these criteria,
 otherwise it will be rejected:
 
-1. Created a separate branch off of the `main` branch for changes
-2. Ensure that the feature/change is working correctly without any undocumented
-   environmental changes (see [Running Dev Environment](#running-dev-environment))
-3. Created any new tests if applicable for the new functionality
-4. Ran the full test suite to ensure there were no regressions (see [Testing](#testing))
+- [x] Ensure that the feature/change is working correctly without any undocumented
+      environmental changes
+- [x] Created any new tests if applicable for the new functionality
+- [x] Ran the full test suite to ensure there were no regressions
+- [x] My code follows the style guidelines of this project
+- [x] I have performed a self-review of my own code
+- [x] I have made corresponding changes to the documentation
+- [x] My changes generate no new warnings
 
 After all of these are true, then submit a PR.
 
