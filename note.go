@@ -8,5 +8,9 @@ type Note struct {
 }
 
 func (n Note) String() string {
-	return fmt.Sprintf("%s%d", n.pitch, n.octave)
+	format_specifier := "%s%d"
+	if len(n.pitch) == 1 {
+		format_specifier = "%s %d"
+	}
+	return fmt.Sprintf(format_specifier, n.pitch, n.octave)
 }

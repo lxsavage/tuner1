@@ -15,8 +15,9 @@ import (
 )
 
 const (
-	ANSI_RESET   = "\033[0m"
-	ANSI_BG_BLUE = "\033[44m"
+	ANSI_RESET     = "\033[0m"
+	ANSI_BG_BLUE   = "\033[44m"
+	ANSI_TEXT_GRAY = "\033[1;30m"
 )
 
 const sample_rate = 44100 // Hz
@@ -62,14 +63,9 @@ func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				selection_changed = true
 			}
 		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			}
+			m.selected = max((m.selected+1)%len(m.choices), 0)
+			selection_changed = true
 		case "down", "j":
-			if m.cursor < len(m.choices)-1 {
-				m.cursor++
-			}
-		case "left", "h":
 			if m.selected < 0 {
 				m.selected = len(m.choices) - 1
 			} else {
@@ -77,9 +73,14 @@ func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			selection_changed = true
+		case "left", "h":
+			if m.cursor > 0 {
+				m.cursor--
+			}
 		case "right", "l":
-			m.selected = max((m.selected+1)%len(m.choices), 0)
-			selection_changed = true
+			if m.cursor < len(m.choices)-1 {
+				m.cursor++
+			}
 		case "1", "2", "3", "4", "5", "6", "7", "8", "9":
 			num, err := strconv.Atoi(msg.String())
 			if err != nil {
@@ -120,11 +121,19 @@ func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m UIModel) View() string {
 	var s strings.Builder
 
-	s.WriteString("tuner1")
+	// Title box
+	var title_layer strings.Builder
+	title_layer.WriteString("tuner1")
 	if m.selected >= 0 {
-		s.WriteString(" 📢")
+		title_layer.WriteString(" 📢")
 	}
-	s.WriteString("\n\n")
+
+	title_box := title_layer.String()
+
+	// Choice box
+	var index_layer strings.Builder
+	var note_layer strings.Builder
+	var interaction_layer strings.Builder
 
 	for i, choice := range m.choices {
 		line_highlight := ""
@@ -137,18 +146,38 @@ func (m UIModel) View() string {
 			checked = "•"
 		}
 
-		fmt.Fprintf(&s, "%s%s%d  %s%s\n", line_highlight, checked, i+1, choice, ANSI_RESET)
+		padded_choice := LeftPad(choice.String(), 3, ' ')
+		fmt.Fprintf(&index_layer, "%s  %d  %s", line_highlight, i+1, ANSI_RESET)
+		fmt.Fprintf(&note_layer, "%s %s %s", line_highlight, padded_choice, ANSI_RESET)
+		fmt.Fprintf(&interaction_layer, "%s  %s  %s", line_highlight, checked, ANSI_RESET)
 	}
 
-	s.WriteString("\n[")
+	choice_box := fmt.Sprintf("%s\n%s\n%s", index_layer.String(), note_layer.String(), interaction_layer.String())
+	choice_box = WrapBox(choice_box, 1, 0)
+
+	// Instruction box
+	var instructions_text strings.Builder
+	instructions_text.WriteRune('[')
 	for i := range m.choices {
-		s.WriteString(strconv.Itoa(i + 1))
+		instructions_text.WriteString(strconv.Itoa(i + 1))
 	}
 
-	s.WriteString("] - select string by #, [← →/hl] - previous/next string\n")
-	s.WriteString("[↑ ↓/jk] - move, [space/enter] - select, m - mute, q - quit\n")
+	instructions_text.WriteString("] - select string by #, [↑ ↓/jk] - next/previous string\n")
+	instructions_text.WriteString("[← →/hl] - move, [space/enter] - select, m - mute, q - quit\n")
 
-	return s.String()
+	instruction_box := instructions_text.String()
+
+	// Create the view
+	fmt.Fprintf(&s, "%s\n\n%s\n\n%s",
+		title_box,
+		choice_box,
+		instruction_box)
+
+	view_box, err := CenterBox(s.String())
+	if err != nil {
+		panic(err)
+	}
+	return view_box
 }
 
 func startUI(tunings []Note, a4 float64) {
