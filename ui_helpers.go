@@ -10,10 +10,10 @@ import (
 	"golang.org/x/term"
 )
 
-var ansiRegexp = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
+var re_ansi_escape = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
 
 func visibleLen(val string) int {
-	clean := ansiRegexp.ReplaceAllString(val, "")
+	clean := re_ansi_escape.ReplaceAllString(val, "")
 	count := 0
 	runes := []rune(clean)
 	for _, r := range runes {
@@ -31,7 +31,7 @@ func terminalWidth() (int, error) {
 
 // Pads the left side of the string so that the result is at least min_length
 // visible runes wide
-func LeftPad(val string, min_length int, wrap_with rune) string {
+func LeftPadLine(val string, min_length int, wrap_with rune) string {
 	if len(val) >= min_length {
 		return val
 	}
@@ -48,7 +48,7 @@ func LeftPad(val string, min_length int, wrap_with rune) string {
 
 // Pads the right side of the string so that the result is at least min_length
 // visible runes wide
-func RightPad(val string, min_length int, wrap_with rune) string {
+func RightPadLine(val string, min_length int, wrap_with rune) string {
 	if len(val) >= min_length {
 		return val
 	}
@@ -88,7 +88,7 @@ func WrapBox(val string, x_pad int, y_pad int) string {
 		fmt.Fprintf(
 			&result, "│%s%s%s│\n",
 			sx_pad,
-			RightPad(line, maxlinelen, ' '),
+			RightPadLine(line, maxlinelen, ' '),
 			sx_pad)
 	}
 	fmt.Fprintf(&result, "%s└%s┘", sy_pad, vert_border)

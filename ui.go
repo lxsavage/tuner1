@@ -119,21 +119,23 @@ func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m UIModel) View() string {
-	var s strings.Builder
+	var view_text strings.Builder
 
 	// Title box
-	var title_layer strings.Builder
-	title_layer.WriteString("tuner1")
-	if m.selected >= 0 {
-		title_layer.WriteString(" 📢")
-	}
+	var title_text strings.Builder
 
-	title_box := title_layer.String()
+	title_text.WriteString("tuner1")
+	if m.selected >= 0 {
+		title_text.WriteString(" 📢")
+	}
+	fmt.Fprintf(&title_text, "\n%s", Version)
+
+	title_box := title_text.String()
 
 	// Choice box
-	var index_layer strings.Builder
-	var note_layer strings.Builder
-	var interaction_layer strings.Builder
+	var index_line strings.Builder
+	var note_line strings.Builder
+	var interaction_line strings.Builder
 
 	for i, choice := range m.choices {
 		line_highlight := ""
@@ -146,13 +148,13 @@ func (m UIModel) View() string {
 			checked = "•"
 		}
 
-		padded_choice := LeftPad(choice.String(), 3, ' ')
-		fmt.Fprintf(&index_layer, "%s  %d  %s", line_highlight, i+1, ANSI_RESET)
-		fmt.Fprintf(&note_layer, "%s %s %s", line_highlight, padded_choice, ANSI_RESET)
-		fmt.Fprintf(&interaction_layer, "%s  %s  %s", line_highlight, checked, ANSI_RESET)
+		padded_choice := LeftPadLine(choice.String(), 3, ' ')
+		fmt.Fprintf(&index_line, "%s  %d  %s", line_highlight, i+1, ANSI_RESET)
+		fmt.Fprintf(&note_line, "%s %s %s", line_highlight, padded_choice, ANSI_RESET)
+		fmt.Fprintf(&interaction_line, "%s  %s  %s", line_highlight, checked, ANSI_RESET)
 	}
 
-	choice_box := fmt.Sprintf("%s\n%s\n%s", index_layer.String(), note_layer.String(), interaction_layer.String())
+	choice_box := fmt.Sprintf("%s\n%s\n%s", index_line.String(), note_line.String(), interaction_line.String())
 	choice_box = WrapBox(choice_box, 1, 0)
 
 	// Instruction box
@@ -168,12 +170,12 @@ func (m UIModel) View() string {
 	instruction_box := instructions_text.String()
 
 	// Create the view
-	fmt.Fprintf(&s, "%s\n\n%s\n\n%s",
+	fmt.Fprintf(&view_text, "%s\n\n%s\n\n%s",
 		title_box,
 		choice_box,
 		instruction_box)
 
-	view_box, err := CenterBox(s.String())
+	view_box, err := CenterBox(view_text.String())
 	if err != nil {
 		panic(err)
 	}
