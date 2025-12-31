@@ -75,8 +75,9 @@ func WrapBox(val string, x_pad int, y_pad int) string {
 		}
 	}
 	maxlinelen += 2 * x_pad
+	empty_line := fmt.Sprintf("│%s│\n", strings.Repeat(" ", maxlinelen))
 	sx_pad := strings.Repeat(" ", x_pad)
-	sy_pad := strings.Repeat("\n", y_pad)
+	sy_pad := strings.Repeat(empty_line, y_pad)
 
 	var b_vert_border strings.Builder
 	b_vert_border.WriteString(strings.Repeat("─", maxlinelen))
@@ -88,7 +89,7 @@ func WrapBox(val string, x_pad int, y_pad int) string {
 		fmt.Fprintf(
 			&result, "│%s%s%s│\n",
 			sx_pad,
-			RightPadLine(line, maxlinelen, ' '),
+			RightPadLine(line, maxlinelen-2*x_pad, ' '),
 			sx_pad)
 	}
 	fmt.Fprintf(&result, "%s└%s┘", sy_pad, vert_border)
