@@ -25,12 +25,12 @@ jobs:
         with:
           go-version: "1.25.5"
 
-      - name: Build
+      - name: Build tuner1
         shell: bash
         run: |
           TAG=${GITHUB_REF#refs/tags/}
           mkdir -p dist
-          go build -v -ldflags "-s -w -X main.Version=$TAG" -o dist/tuner1 ./...
+          go build -v -ldflags "-s -w -X main.Version=$TAG" -o dist/tuner1 ./cmd/tuner1
 
       - name: Rename binary
         shell: bash
