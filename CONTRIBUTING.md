@@ -41,12 +41,8 @@ to look in the default configuration directory based on your OS.
 The main commands you will need for getting this up and running are:
 
 ```sh
-# Initial module retrieval
-go get .
-
-# Testing templates
-go run . -standards config/standards.txt -ls
-go run . -standards config/standards.txt -tuning +template_name
+go run ./cmd/tuner1 -standards config/standards.txt -ls
+go run ./cmd/tuner1 -standards config/standards.txt -tuning +template_name
 ```
 
 ## Testing
@@ -54,7 +50,7 @@ go run . -standards config/standards.txt -tuning +template_name
 Tests are set up with the standard Go test runner, which can be run with
 
 ```sh
-go test .
+go test ./...
 ```
 
 after initially building and running the project. This should result in an

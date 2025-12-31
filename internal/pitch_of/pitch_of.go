@@ -41,8 +41,7 @@ func PitchOf(note common.Note, a4 float64) (float64, error) {
 	semitone_offset := note_offset + (octave_offset * 12)
 
 	// A4 * 2^(n/12) where n is the number of semitones away from A4
-	fp_exp := float64(semitone_offset) / 12
-	final_pitch_hz := a4 * math.Pow(2, fp_exp)
+	final_pitch_hz := a4 * math.Pow(2, float64(semitone_offset)/12)
 
 	return final_pitch_hz, nil
 }
