@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"lxsavage/tuner1/internal/tuning"
+	"lxsavage/tuner1/internal/ui"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -56,7 +58,7 @@ func listTemplates(path_std_file string) {
 		log.Fatal(err)
 	}
 
-	fmt.Print(SprintStandards(std_file))
+	fmt.Print(tuning.SprintStandards(std_file))
 	std_file.Close()
 }
 
@@ -64,7 +66,7 @@ func main() {
 	version := flag.Bool("version", false, "display the program version")
 	template := flag.Bool("ls", false, "list templates")
 	edit_standards := flag.Bool("edit-standards", false, "open the standards file with the default EDITOR.")
-	tuning := flag.String("tuning", "", "a CSV list of notes for a tuning, or '+' followed by a template name")
+	tuning_template := flag.String("tuning", "", "a CSV list of notes for a tuning, or '+' followed by a template name")
 	reference := flag.Float64("A4", 440.0, "the reference pitch to tune A4 to in Hertz")
 	standards := flag.String("standards", "", "an alternate path to a non-standard standards.txt template file")
 
@@ -80,7 +82,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	is_template := len(*tuning) > 0 && (*tuning)[0] == '+'
+	is_template := len(*tuning_template) > 0 && (*tuning_template)[0] == '+'
 	should_use_default_std_file := *edit_standards || *template || is_template
 
 	path_std_file := *standards
@@ -102,20 +104,20 @@ func main() {
 		os.Exit(0)
 	}
 
-	if len(*tuning) == 0 {
+	if len(*tuning_template) == 0 {
 		fmt.Fprintf(os.Stderr, "Please pass in a tuning specifier\n\nTry:\n  %s -ls\n", os.Args[0])
 		os.Exit(1)
 	}
 
-	tuning_csv := *tuning
-	if (*tuning)[0] == '+' {
+	tuning_csv := *tuning_template
+	if (*tuning_template)[0] == '+' {
 		std_file, err := os.Open(path_std_file)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer std_file.Close()
 
-		csv, err := getStandard(std_file, *tuning)
+		csv, err := tuning.GetStandard(std_file, *tuning_template)
 		if err != nil {
 			log.Fatalf("failed to load template: %s\n", err)
 		}
@@ -123,10 +125,10 @@ func main() {
 		tuning_csv = csv
 	}
 
-	tunings, err := getTuning(tuning_csv)
+	tunings, err := tuning.GetTuning(tuning_csv)
 	if err != nil {
 		log.Fatalf("Failed to parse tuning: %s\n", err)
 	}
 
-	startUI(tunings, *reference)
+	ui.StartUI(tunings, *reference, Version)
 }

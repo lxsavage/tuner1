@@ -1,4 +1,4 @@
-package main
+package ui_helpers
 
 import "testing"
 

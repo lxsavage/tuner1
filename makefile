@@ -15,7 +15,7 @@ all: $(BINARY)
 # ---- Build rule -------------------------------------------------------------
 $(BINARY): $(GOFILES) $(GOMOD) $(GOSUM) config/standards.txt
 	mkdir -p dist/
-	go build -o $@ .
+	go build -o $@ ./cmd/tuner1
 
 # ---- Install / upgrade / uninstall / clean ----------------------------------
 install: upgrade

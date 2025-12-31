@@ -1,9 +1,10 @@
-package main
+package tuning
 
 import (
 	"bufio"
 	"errors"
 	"fmt"
+	"lxsavage/tuner1/internal/common"
 	"os"
 	"regexp"
 	"strconv"
@@ -30,7 +31,7 @@ func SprintStandards(std_file *os.File) string {
 	return result.String()
 }
 
-func getStandard(std_file *os.File, name string) (string, error) {
+func GetStandard(std_file *os.File, name string) (string, error) {
 	check := name
 	if name[0] == '+' {
 		check = name[1:]
@@ -60,9 +61,9 @@ func getStandard(std_file *os.File, name string) (string, error) {
 	return "", fmt.Errorf("standard +%s not found", name)
 }
 
-func getTuning(tuning_csv string) ([]Note, error) {
+func GetTuning(tuning_csv string) ([]common.Note, error) {
 	tunings_raw := strings.Split(tuning_csv, ",")
-	var tunings []Note
+	var tunings []common.Note
 	for _, note := range tunings_raw {
 		matches := re_valid_note.FindStringSubmatch(note)
 		if len(matches) != 3 {
@@ -83,7 +84,7 @@ func getTuning(tuning_csv string) ([]Note, error) {
 			return nil, errors.New("invalid note (failed to parse octave #): " + note)
 		}
 
-		tunings = append(tunings, Note{pitch, octave})
+		tunings = append(tunings, common.Note{Pitch: pitch, Octave: octave})
 	}
 
 	return tunings, nil

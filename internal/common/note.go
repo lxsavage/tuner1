@@ -1,16 +1,16 @@
-package main
+package common
 
 import "fmt"
 
 type Note struct {
-	pitch  string
-	octave int
+	Pitch  string
+	Octave int
 }
 
 func (n Note) String() string {
 	format_specifier := "%s%d"
-	if len(n.pitch) == 1 {
+	if len(n.Pitch) == 1 {
 		format_specifier = "%s %d"
 	}
-	return fmt.Sprintf(format_specifier, n.pitch, n.octave)
+	return fmt.Sprintf(format_specifier, n.Pitch, n.Octave)
 }

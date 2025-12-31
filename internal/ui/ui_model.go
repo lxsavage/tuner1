@@ -1,13 +1,17 @@
-package main
+package ui
+
+import (
+	"lxsavage/tuner1/internal/common"
+)
 
 type UIModel struct {
-	choices  []Note
+	choices  []common.Note
 	cursor   int
 	selected int
 	a4       float64
 }
 
-func InitialUIModel(tuning []Note, a4 float64) UIModel {
+func InitialUIModel(tuning []common.Note, a4 float64) UIModel {
 	return UIModel{
 		choices:  tuning,
 		cursor:   0,

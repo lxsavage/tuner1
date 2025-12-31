@@ -1,7 +1,8 @@
-package main
+package pitch_of
 
 import (
 	"errors"
+	"lxsavage/tuner1/internal/common"
 	"math"
 )
 
@@ -29,14 +30,14 @@ var pitch_offsets = map[string]int{
 // Determine the pitch in Hertz of a note in scientific notation with a given A4 reference.
 //
 // Generally, A4=440.0 Hz, but it may be different in some contexts.
-func pitchOf(note Note, a4 float64) (float64, error) {
+func PitchOf(note common.Note, a4 float64) (float64, error) {
 	var note_offset int
 	var note_exists bool
-	if note_offset, note_exists = pitch_offsets[note.pitch]; !note_exists {
-		return 0.0, errors.New("Invalid note name: " + note.pitch)
+	if note_offset, note_exists = pitch_offsets[note.Pitch]; !note_exists {
+		return 0.0, errors.New("Invalid note name: " + note.Pitch)
 	}
 
-	octave_offset := note.octave - 4
+	octave_offset := note.Octave - 4
 	semitone_offset := note_offset + (octave_offset * 12)
 
 	// A4 * 2^(n/12) where n is the number of semitones away from A4

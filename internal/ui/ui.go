@@ -1,8 +1,11 @@
-package main
+package ui
 
 import (
 	"fmt"
 	"log"
+	"lxsavage/tuner1/internal/common"
+	"lxsavage/tuner1/internal/pitch_of"
+	"lxsavage/tuner1/pkg/ui_helpers"
 	"math"
 	"strconv"
 	"strings"
@@ -27,6 +30,7 @@ var (
 	mu_freq sync.RWMutex
 )
 
+var p_version string
 var wave_pos = 0
 
 // Generate a sine wave in place in samples. Returns the amount of samples
@@ -103,7 +107,7 @@ func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var newFreq float64 = 0
 		if m.selected >= 0 {
 			var err error
-			newFreq, err = pitchOf(m.choices[m.selected], m.a4)
+			newFreq, err = pitch_of.PitchOf(m.choices[m.selected], m.a4)
 
 			if err != nil {
 				log.Fatal(err)
@@ -128,7 +132,7 @@ func (m UIModel) View() string {
 	if m.selected >= 0 {
 		title_text.WriteString(" 📢")
 	}
-	fmt.Fprintf(&title_text, "\n%s", Version)
+	fmt.Fprintf(&title_text, "\n%s", p_version)
 
 	title_box := title_text.String()
 
@@ -148,14 +152,14 @@ func (m UIModel) View() string {
 			checked = "•"
 		}
 
-		padded_choice := LeftPadLine(choice.String(), 3, ' ')
+		padded_choice := ui_helpers.LeftPadLine(choice.String(), 3, ' ')
 		fmt.Fprintf(&index_line, "%s  %d  %s", line_highlight, i+1, ANSI_RESET)
 		fmt.Fprintf(&note_line, "%s %s %s", line_highlight, padded_choice, ANSI_RESET)
 		fmt.Fprintf(&interaction_line, "%s  %s  %s", line_highlight, checked, ANSI_RESET)
 	}
 
 	choice_box := fmt.Sprintf("%s\n%s\n%s", index_line.String(), note_line.String(), interaction_line.String())
-	choice_box = WrapBox(choice_box, 1, 0)
+	choice_box = ui_helpers.WrapBox(choice_box, 1, 0)
 
 	// Instruction box
 	var instructions_text strings.Builder
@@ -175,14 +179,15 @@ func (m UIModel) View() string {
 		choice_box,
 		instruction_box)
 
-	view_box, err := CenterBox(view_text.String())
+	view_box, err := ui_helpers.CenterBox(view_text.String())
 	if err != nil {
 		panic(err)
 	}
 	return view_box
 }
 
-func startUI(tunings []Note, a4 float64) {
+func StartUI(tunings []common.Note, a4 float64, version string) {
+	p_version = version
 	sr := beep.SampleRate(sample_rate)
 	speaker.Init(sr, sr.N(time.Second/10))
 
