@@ -11,8 +11,8 @@ import (
 func TestGetTuning(t *testing.T) {
 	csv := "E2,A2,D3,G3,Bb3,E#4"
 	want := []common.Note{
-		{Pitch: "A", Octave: 2},
 		{Pitch: "E", Octave: 2},
+		{Pitch: "A", Octave: 2},
 		{Pitch: "D", Octave: 3},
 		{Pitch: "G", Octave: 3},
 		{Pitch: "Bb", Octave: 3},
