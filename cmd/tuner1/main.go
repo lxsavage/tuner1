@@ -1,15 +1,18 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"log"
 	"lxsavage/tuner1/internal/tuning"
 	"lxsavage/tuner1/internal/ui"
+	"lxsavage/tuner1/pkg/sysexit"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 var Version = "localbuild"
@@ -23,7 +26,29 @@ func getStandardsConfigFilepath() string {
 	return filepath.Join(config_dir, "tuner1", "standards.txt")
 }
 
-func editStandards(path_std_file string) error {
+func getStandardsFileContents(path_std_file string) ([]string, error) {
+	var res []string
+
+	std_file, err := os.Open(path_std_file)
+	if err != nil {
+		return nil, err
+	}
+	defer std_file.Close()
+
+	sc := bufio.NewScanner(std_file)
+	for sc.Scan() {
+		line := strings.TrimSpace(sc.Text())
+		if len(line) == 0 {
+			continue
+		}
+
+		res = append(res, line)
+	}
+
+	return res, nil
+}
+
+func launchStandardsEditor(path_std_file string) error {
 	var cmd string
 	var args []string
 
@@ -53,13 +78,13 @@ func editStandards(path_std_file string) error {
 }
 
 func listTemplates(path_std_file string) {
-	std_file, err := os.Open(path_std_file)
+	standards, err := getStandardsFileContents(path_std_file)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "Failed to read standards file: %s\n", err)
+		os.Exit(sysexit.EX_IOERR)
 	}
 
-	fmt.Print(tuning.SprintStandards(std_file))
-	std_file.Close()
+	fmt.Print(tuning.SprintStandards(standards))
 }
 
 func main() {
@@ -79,47 +104,48 @@ func main() {
 
 	if *version {
 		fmt.Printf("%s\n", Version)
-		os.Exit(0)
+		os.Exit(sysexit.EX_OK)
 	}
 
 	is_template := len(*tuning_template) > 0 && (*tuning_template)[0] == '+'
 	should_use_default_std_file := *edit_standards || *template || is_template
 
 	path_std_file := *standards
-	if len(path_std_file) == 0 && should_use_default_std_file {
+	if should_use_default_std_file && len(path_std_file) == 0 {
 		path_std_file = getStandardsConfigFilepath()
 	}
 
 	if *template {
 		listTemplates(path_std_file)
-		os.Exit(0)
+		os.Exit(sysexit.EX_OK)
 	}
 
 	if *edit_standards {
-		if err := editStandards(path_std_file); err != nil {
+		if err := launchStandardsEditor(path_std_file); err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to launch editor: %s\n", err)
-			os.Exit(1)
+			os.Exit(sysexit.EX_UNAVAILABLE)
 		}
 
-		os.Exit(0)
+		os.Exit(sysexit.EX_OK)
 	}
 
 	if len(*tuning_template) == 0 {
 		fmt.Fprintf(os.Stderr, "Please pass in a tuning specifier\n\nTry:\n  %s -ls\n", os.Args[0])
-		os.Exit(1)
+		os.Exit(sysexit.EX_USAGE)
 	}
 
 	tuning_csv := *tuning_template
 	if (*tuning_template)[0] == '+' {
-		std_file, err := os.Open(path_std_file)
+		standards, err := getStandardsFileContents(path_std_file)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Fprintf(os.Stderr, "Failed to open standards file: %s\n", err)
+			os.Exit(sysexit.EX_IOERR)
 		}
-		defer std_file.Close()
 
-		csv, err := tuning.GetStandard(std_file, *tuning_template)
+		csv, err := tuning.GetStandard(standards, *tuning_template)
 		if err != nil {
-			log.Fatalf("failed to load template: %s\n", err)
+			fmt.Fprintf(os.Stderr, "Failed to load template: %s\n", err)
+			os.Exit(sysexit.EX_DATAERR)
 		}
 
 		tuning_csv = csv
@@ -127,8 +153,11 @@ func main() {
 
 	tunings, err := tuning.GetTuning(tuning_csv)
 	if err != nil {
-		log.Fatalf("Failed to parse tuning: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to parse tuning: %s\n", err)
+		os.Exit(sysexit.EX_CONFIG)
 	}
 
-	ui.StartUI(tunings, *reference, Version)
+	if ex_code := ui.StartUI(tunings, *reference, Version); ex_code != sysexit.EX_OK {
+		os.Exit(ex_code)
+	}
 }

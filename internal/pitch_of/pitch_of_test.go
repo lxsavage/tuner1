@@ -3,6 +3,7 @@ package pitch_of
 import (
 	"lxsavage/tuner1/internal/common"
 	"math"
+	"strings"
 	"testing"
 )
 
@@ -55,5 +56,16 @@ func TestPitchOfB8(t *testing.T) {
 
 	if diff := math.Abs(of - want); diff > 0.01 {
 		t.Errorf("pitchOf(note{pitch: \"B\", octave: 8}, 440.0) = %.2f; want approximately %.2f", of, want)
+	}
+}
+func TestInvalidNoteName(t *testing.T) {
+	want_err := "Invalid note name: H"
+	of, err := PitchOf(common.Note{Pitch: "H", Octave: 8}, 440.0)
+	if err == nil {
+		t.Fatalf("pitchOf(note{pitch: \"H\", octave: 8}, 440.0) = %.2f; want contains(error(...), \"%s\")", of, want_err)
+	}
+
+	if !strings.Contains(err.Error(), want_err) {
+		t.Fatalf("pitchOf(note{pitch: \"H\", octave: 8}, 440.0) = %.2f; want contains(error(...), \"%s\")", of, want_err)
 	}
 }

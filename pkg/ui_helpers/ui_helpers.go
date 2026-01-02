@@ -2,12 +2,9 @@ package ui_helpers
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 	"unicode"
-
-	"golang.org/x/term"
 )
 
 var re_ansi_escape = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
@@ -22,11 +19,6 @@ func visibleLen(val string) int {
 		}
 	}
 	return count
-}
-
-func terminalWidth() (int, error) {
-	width, _, err := term.GetSize(int(os.Stdout.Fd()))
-	return width, err
 }
 
 // Pads the left side of the string so that the result is at least min_length
@@ -98,24 +90,20 @@ func WrapBox(val string, x_pad int, y_pad int) string {
 }
 
 // Centers all of the lines in val based on the terminal width
-func CenterBox(val string) (string, error) {
-	width, err := terminalWidth()
-	if err != nil {
-		return "", err
-	}
-
+func CenterBox(val string, col_count int) string {
 	var result strings.Builder
 	lines := strings.SplitSeq(val, "\n")
 	for line := range lines {
 		half_w := visibleLen(line) / 2
 
 		left_pad := ""
-		if left_w := width/2 - half_w; left_w > 0 {
+		if left_w := col_count/2 - half_w; left_w > 0 {
 			left_pad = strings.Repeat(" ", left_w)
 		}
 
 		fmt.Fprintf(&result, "%s%s\n", left_pad, line)
 	}
 
-	return result.String(), nil
+	res := result.String()
+	return res[:len(res)-1]
 }

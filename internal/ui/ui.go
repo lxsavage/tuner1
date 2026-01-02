@@ -5,14 +5,17 @@ import (
 	"log"
 	"lxsavage/tuner1/internal/common"
 	"lxsavage/tuner1/internal/pitch_of"
+	"lxsavage/tuner1/pkg/sysexit"
 	"lxsavage/tuner1/pkg/ui_helpers"
 	"math"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/x/term"
 	"github.com/gopxl/beep"
 	"github.com/gopxl/beep/speaker"
 )
@@ -25,13 +28,13 @@ const (
 
 const sample_rate = 44100 // Hz
 
-var (
-	freq    = 0.0 // Hz
-	mu_freq sync.RWMutex
-)
-
 var p_version string
-var wave_pos = 0
+
+var (
+	freq     = 0.0 // Hz
+	mu_freq  sync.RWMutex
+	wave_pos int
+)
 
 // Generate a sine wave in place in samples. Returns the amount of samples
 // after the operation, as well as if the operation was successful.
@@ -123,6 +126,11 @@ func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m UIModel) View() string {
+	term_col_count, _, err := term.GetSize(os.Stdout.Fd())
+	if err != nil {
+		panic(err)
+	}
+
 	var view_text strings.Builder
 
 	// Title box
@@ -179,15 +187,12 @@ func (m UIModel) View() string {
 		choice_box,
 		instruction_box)
 
-	view_box, err := ui_helpers.CenterBox(view_text.String())
-	if err != nil {
-		panic(err)
-	}
-	return view_box
+	return ui_helpers.CenterBox(view_text.String(), term_col_count)
 }
 
-func StartUI(tunings []common.Note, a4 float64, version string) {
+func StartUI(tunings []common.Note, a4 float64, version string) int {
 	p_version = version
+
 	sr := beep.SampleRate(sample_rate)
 	speaker.Init(sr, sr.N(time.Second/10))
 
@@ -196,6 +201,9 @@ func StartUI(tunings []common.Note, a4 float64, version string) {
 
 	ui := tea.NewProgram(InitialUIModel(tunings, a4), tea.WithAltScreen())
 	if _, err := ui.Run(); err != nil {
-		log.Fatalf("Critial error when running the tuner1 TUI:\n%s", err)
+		fmt.Fprintf(os.Stderr, "Critial error when running the tuner1 TUI:\n%s", err)
+		return sysexit.EX_SOFTWARE
 	}
+
+	return sysexit.EX_OK
 }

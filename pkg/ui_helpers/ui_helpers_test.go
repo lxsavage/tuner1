@@ -1,6 +1,9 @@
 package ui_helpers
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestLeftPadLine(t *testing.T) {
 	want := "  asdf"
@@ -107,5 +110,36 @@ func TestWrapBoxTwoLinesNotEqualLenXYPad(t *testing.T) {
 
 	if want != of {
 		t.Errorf("WrapBox(\"asdf\",1,1) =\n%s\n; want\n%s\n", of, want)
+	}
+}
+
+func TestCenterBoxEvenCoverage(t *testing.T) {
+	want := "  asdf\n  fdsa"
+	of := CenterBox("asdf\nfdsa", 8)
+
+	if want != of {
+		want_spaces := strings.ReplaceAll(want, " ", ".")
+		of_spaces := strings.ReplaceAll(of, " ", ".")
+		t.Errorf("CenterBox(\"asdf\\nfdsa\",8) =\n%s\n; want\n%s\n", of_spaces, want_spaces)
+	}
+}
+func TestCenterBoxNoPad(t *testing.T) {
+	want := "asdf\nfdsa"
+	of := CenterBox("asdf\nfdsa", 4)
+
+	if want != of {
+		want_spaces := strings.ReplaceAll(want, " ", ".")
+		of_spaces := strings.ReplaceAll(of, " ", ".")
+		t.Errorf("CenterBox(\"asdf\\nfdsa\",4) =\n%s\n; want\n%s\n", of_spaces, want_spaces)
+	}
+}
+func TestCenterBoxNegativePad(t *testing.T) {
+	want := "asdf\nfdsa"
+	of := CenterBox("asdf\nfdsa", 1)
+
+	if want != of {
+		want_spaces := strings.ReplaceAll(want, " ", ".")
+		of_spaces := strings.ReplaceAll(of, " ", ".")
+		t.Errorf("CenterBox(\"asdf\\nfdsa\",4) =\n%s\n; want\n%s\n", of_spaces, want_spaces)
 	}
 }

@@ -1,11 +1,9 @@
 package tuning
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"lxsavage/tuner1/internal/common"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -14,16 +12,10 @@ import (
 // A scientific-notation note is in the format <Note uppercase><accidental?><octave number>, i.e., C#4
 var re_valid_note = regexp.MustCompile(`^([A-G][#b]?)(\d+)`)
 
-func SprintStandards(std_file *os.File) string {
+func SprintStandards(standards []string) string {
 	var result strings.Builder
-	sc := bufio.NewScanner(std_file)
 
-	for sc.Scan() {
-		line := strings.TrimSpace(sc.Text())
-		if len(line) == 0 {
-			continue
-		}
-
+	for _, line := range standards {
 		key := strings.Split(line, ":")[0]
 		result.WriteString("+" + key + "\n")
 	}
@@ -31,20 +23,13 @@ func SprintStandards(std_file *os.File) string {
 	return result.String()
 }
 
-func GetStandard(std_file *os.File, name string) (string, error) {
+func GetStandard(standards []string, name string) (string, error) {
 	check := name
 	if name[0] == '+' {
 		check = name[1:]
 	}
 
-	sc := bufio.NewScanner(std_file)
-
-	for sc.Scan() {
-		line := strings.TrimSpace(sc.Text())
-		if len(line) == 0 {
-			continue
-		}
-
+	for _, line := range standards {
 		kv := strings.Split(line, ":")
 
 		if len(kv) != 2 {
@@ -58,7 +43,7 @@ func GetStandard(std_file *os.File, name string) (string, error) {
 		return kv[1], nil
 	}
 
-	return "", fmt.Errorf("standard +%s not found", name)
+	return "", fmt.Errorf("standard +%s not found", check)
 }
 
 func GetTuning(tuning_csv string) ([]common.Note, error) {
@@ -68,7 +53,7 @@ func GetTuning(tuning_csv string) ([]common.Note, error) {
 		matches := re_valid_note.FindStringSubmatch(note)
 		if len(matches) != 3 {
 			msg := "invalid note: " + note
-			if len(note) > 0 && (note[0] < 65 || note[0] > 90) {
+			if len(note) > 0 && (note[0] < 65 /*A*/ || note[0] > 71 /*G*/) {
 				msg += "\n- The note name must be represented by an uppercase A-G"
 			}
 
@@ -81,7 +66,9 @@ func GetTuning(tuning_csv string) ([]common.Note, error) {
 		pitch := matches[1]
 		octave, err := strconv.Atoi(matches[2])
 		if err != nil {
-			return nil, errors.New("invalid note (failed to parse octave #): " + note)
+			// This is added as a safety net, should never be hit since the regexp
+			// ensures that the octave portion of the split is only digits
+			return nil, err
 		}
 
 		tunings = append(tunings, common.Note{Pitch: pitch, Octave: octave})
