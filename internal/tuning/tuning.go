@@ -67,11 +67,17 @@ func GetTuning(tuning_csv string) ([]note.Note, error) {
 		octave, err := strconv.Atoi(matches[2])
 		if err != nil {
 			// This is added as a safety net, should never be hit since the regexp
-			// ensures that the octave portion of the split is only digits
+			// ensures that the octave portion of the split is only digits (negatives
+			// implicitly excluded)
 			return nil, err
 		}
 
-		tunings = append(tunings, note.Note{Pitch: pitch, Octave: octave})
+		new_note, err := note.New(pitch, uint(octave))
+		if err != nil {
+			return nil, err
+		}
+
+		tunings = append(tunings, new_note)
 	}
 
 	return tunings, nil

@@ -6,19 +6,6 @@ import (
 	"math"
 )
 
-type Note struct {
-	Pitch  string
-	Octave int
-}
-
-func (n Note) String() string {
-	format_specifier := "%s%d"
-	if len(n.Pitch) == 1 {
-		format_specifier = "%s %d"
-	}
-	return fmt.Sprintf(format_specifier, n.Pitch, n.Octave)
-}
-
 // Pitch offsets from A; octave in standard notation starts a C and ends one octave higher
 var pitch_offsets = map[string]int{
 	"C":  -9,
@@ -40,6 +27,27 @@ var pitch_offsets = map[string]int{
 	"B":  2,
 }
 
+type Note struct {
+	Pitch  string
+	Octave uint
+}
+
+func New(pitch string, octave uint) (Note, error) {
+	if _, valid_note := pitch_offsets[pitch]; !valid_note {
+		return Note{}, errors.New("invalid note name: " + pitch)
+	}
+	n := Note{pitch, octave}
+	return n, nil
+}
+
+func (n Note) String() string {
+	format_specifier := "%s%d"
+	if len(n.Pitch) == 1 {
+		format_specifier = "%s %d"
+	}
+	return fmt.Sprintf(format_specifier, n.Pitch, n.Octave)
+}
+
 // Determine the pitch in Hertz of a note in scientific notation with a given A4 reference.
 //
 // Generally, A4=440.0 Hz, but it may be different in some contexts.
@@ -50,7 +58,7 @@ func (note Note) PitchOf(a4 float64) (float64, error) {
 		return 0.0, errors.New("Invalid note name: " + note.Pitch)
 	}
 
-	octave_offset := note.Octave - 4
+	octave_offset := int(note.Octave) - 4
 	semitone_offset := note_offset + (octave_offset * 12)
 
 	// A4 * 2^(n/12) where n is the number of semitones away from A4

@@ -83,38 +83,39 @@ func TestGetStandardIllegalDefinition(t *testing.T) {
 }
 
 func TestGetTuningValid(t *testing.T) {
-	csv := "A2,D3,G3,Bb3,E#4"
+	csv := "A2,D#3,G3,Bb3,E4"
 	want := []note.Note{
 		{Pitch: "A", Octave: 2},
-		{Pitch: "D", Octave: 3},
+		{Pitch: "D#", Octave: 3},
 		{Pitch: "G", Octave: 3},
 		{Pitch: "Bb", Octave: 3},
-		{Pitch: "E#", Octave: 4},
+		{Pitch: "E", Octave: 4},
 	}
+
+	var want_str strings.Builder
+	want_str.WriteString("[\n")
+	for n := range want {
+		note := want[n]
+		want_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
+	}
+	want_str.WriteRune(']')
 
 	of, err := GetTuning(csv)
 	if err != nil {
-		t.Fatalf("pitchOf(\"csv\") ERR: %s", err)
+		t.Fatalf("GetTuning(\"%s\") = error(\"%s\"), want %s", csv, err, want_str.String())
 	}
 
 	if !reflect.DeepEqual(of, want) {
-		var want_str strings.Builder
 		var of_str strings.Builder
 
-		want_str.WriteString("[\n")
 		of_str.WriteString("[\n")
-
-		for n := range want {
-			note := want[n]
-			want_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(note.Octave) + "}\n")
-		}
-
 		for n := range of {
 			note := of[n]
-			of_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(note.Octave) + "}\n")
+			of_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
 		}
+		of_str.WriteRune(']')
 
-		t.Fatalf("getTuning(\"%s\") = %s\nwant %s", csv, of_str.String(), want_str.String())
+		t.Fatalf("GetTuning(\"%s\") = %s\nwant %s", csv, of_str.String(), want_str.String())
 	}
 }
 
@@ -128,7 +129,7 @@ func TestGetTuningInvalidNoteName(t *testing.T) {
 		of_str.WriteString("[\n")
 		for n := range of {
 			note := of[n]
-			of_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(note.Octave) + "}\n")
+			of_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
 		}
 
 		t.Fatalf("getTuning(\"%s\") = %s\nwant contains(error(...),%s)", csv, of_str.String(), want_err)
@@ -149,7 +150,7 @@ func TestGetTuningInvalidNoteAccidentalCapitalFlat(t *testing.T) {
 		of_str.WriteString("[\n")
 		for n := range of {
 			note := of[n]
-			of_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(note.Octave) + "}\n")
+			of_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
 		}
 
 		t.Fatalf("getTuning(\"%s\") = %s\nwant contains(error(...),%s)", csv, of_str.String(), want_err)
@@ -170,7 +171,7 @@ func TestGetTuningInvalidNoteCatchall(t *testing.T) {
 		of_str.WriteString("[\n")
 		for n := range of {
 			note := of[n]
-			of_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(note.Octave) + "}\n")
+			of_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
 		}
 
 		t.Fatalf("getTuning(\"%s\") = %s\nwant contains(error(...),%s)", csv, of_str.String(), want_err)

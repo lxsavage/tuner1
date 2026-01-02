@@ -6,6 +6,30 @@ import (
 	"testing"
 )
 
+func TestNewNoteValid(t *testing.T) {
+	want := Note{"A", 4}
+	of, err := New("A", 4)
+	if err != nil {
+		t.Fatalf("New(\"A\", 4) = error(\"%s\"); want %s", err.Error(), want)
+	}
+
+	if want != of {
+		t.Fatalf("New(\"A\", 4) = %s; want %s", of, want)
+	}
+}
+
+func TestNewNoteInvalidNote(t *testing.T) {
+	want_str := "invalid note name"
+	of, err := New("H", 4)
+	if err == nil {
+		t.Fatalf("New(\"H\", 4) = %s; want contains(error(...), \"%s\")", of, want_str)
+	}
+
+	if !strings.Contains(err.Error(), want_str) {
+		t.Fatalf("New(\"H\", 4) = error(\"%s\"); want contains(error(...), \"%s\")", err.Error(), want_str)
+	}
+}
+
 func TestPitchOfC0(t *testing.T) {
 	// C0 should be approximately 16.35 Hz when A4 is 440 Hz
 	want := 16.35
