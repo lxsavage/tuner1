@@ -1,10 +1,23 @@
-package pitch_of
+package note
 
 import (
 	"errors"
-	"lxsavage/tuner1/internal/common"
+	"fmt"
 	"math"
 )
+
+type Note struct {
+	Pitch  string
+	Octave int
+}
+
+func (n Note) String() string {
+	format_specifier := "%s%d"
+	if len(n.Pitch) == 1 {
+		format_specifier = "%s %d"
+	}
+	return fmt.Sprintf(format_specifier, n.Pitch, n.Octave)
+}
 
 // Pitch offsets from A; octave in standard notation starts a C and ends one octave higher
 var pitch_offsets = map[string]int{
@@ -30,7 +43,7 @@ var pitch_offsets = map[string]int{
 // Determine the pitch in Hertz of a note in scientific notation with a given A4 reference.
 //
 // Generally, A4=440.0 Hz, but it may be different in some contexts.
-func PitchOf(note common.Note, a4 float64) (float64, error) {
+func (note Note) PitchOf(a4 float64) (float64, error) {
 	var note_offset int
 	var note_exists bool
 	if note_offset, note_exists = pitch_offsets[note.Pitch]; !note_exists {

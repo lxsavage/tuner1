@@ -3,8 +3,7 @@ package ui
 import (
 	"fmt"
 	"log"
-	"lxsavage/tuner1/internal/common"
-	"lxsavage/tuner1/internal/pitch_of"
+	"lxsavage/tuner1/pkg/note"
 	"lxsavage/tuner1/pkg/sysexit"
 	"lxsavage/tuner1/pkg/ui_helpers"
 	"math"
@@ -110,7 +109,7 @@ func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var newFreq float64 = 0
 		if m.selected >= 0 {
 			var err error
-			newFreq, err = pitch_of.PitchOf(m.choices[m.selected], m.a4)
+			newFreq, err = m.choices[m.selected].PitchOf(m.a4)
 
 			if err != nil {
 				log.Fatal(err)
@@ -190,7 +189,7 @@ func (m UIModel) View() string {
 	return ui_helpers.CenterBox(view_text.String(), term_col_count)
 }
 
-func StartUI(tunings []common.Note, a4 float64, version string) int {
+func StartUI(tunings []note.Note, a4 float64, version string) int {
 	p_version = version
 
 	sr := beep.SampleRate(sample_rate)

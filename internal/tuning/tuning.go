@@ -3,7 +3,7 @@ package tuning
 import (
 	"errors"
 	"fmt"
-	"lxsavage/tuner1/internal/common"
+	"lxsavage/tuner1/pkg/note"
 	"regexp"
 	"strconv"
 	"strings"
@@ -46,18 +46,18 @@ func GetStandard(standards []string, name string) (string, error) {
 	return "", fmt.Errorf("standard +%s not found", check)
 }
 
-func GetTuning(tuning_csv string) ([]common.Note, error) {
+func GetTuning(tuning_csv string) ([]note.Note, error) {
 	tunings_raw := strings.Split(tuning_csv, ",")
-	var tunings []common.Note
-	for _, note := range tunings_raw {
-		matches := re_valid_note.FindStringSubmatch(note)
+	var tunings []note.Note
+	for _, note_name := range tunings_raw {
+		matches := re_valid_note.FindStringSubmatch(note_name)
 		if len(matches) != 3 {
-			msg := "invalid note: " + note
-			if len(note) > 0 && (note[0] < 65 /*A*/ || note[0] > 71 /*G*/) {
+			msg := "invalid note: " + note_name
+			if len(note_name) > 0 && (note_name[0] < 65 /*A*/ || note_name[0] > 71 /*G*/) {
 				msg += "\n- The note name must be represented by an uppercase A-G"
 			}
 
-			if len(note) > 1 && strings.Contains(note[1:], "B") {
+			if len(note_name) > 1 && strings.Contains(note_name[1:], "B") {
 				msg += "\n- A flat accidental must be represented by a lowercase \"b\""
 			}
 			return nil, errors.New(msg)
@@ -71,7 +71,7 @@ func GetTuning(tuning_csv string) ([]common.Note, error) {
 			return nil, err
 		}
 
-		tunings = append(tunings, common.Note{Pitch: pitch, Octave: octave})
+		tunings = append(tunings, note.Note{Pitch: pitch, Octave: octave})
 	}
 
 	return tunings, nil

@@ -1,7 +1,7 @@
 package tuning
 
 import (
-	"lxsavage/tuner1/internal/common"
+	"lxsavage/tuner1/pkg/note"
 	"reflect"
 	"strconv"
 	"strings"
@@ -84,7 +84,7 @@ func TestGetStandardIllegalDefinition(t *testing.T) {
 
 func TestGetTuningValid(t *testing.T) {
 	csv := "A2,D3,G3,Bb3,E#4"
-	want := []common.Note{
+	want := []note.Note{
 		{Pitch: "A", Octave: 2},
 		{Pitch: "D", Octave: 3},
 		{Pitch: "G", Octave: 3},
