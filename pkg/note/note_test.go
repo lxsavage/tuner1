@@ -39,7 +39,7 @@ func TestPitchOfC0(t *testing.T) {
 	}
 
 	if diff := math.Abs(of - want); diff > 0.01 {
-		t.Errorf("pitchOf(Note{pitch: \"C\", octave: 0}, 440.0) = %.2f; want approximately %.2f", of, want)
+		t.Errorf("PitchOf(Note{pitch: \"C\", octave: 0}, 440.0) = %.2f; want approximately %.2f", of, want)
 	}
 }
 
@@ -52,7 +52,7 @@ func TestPitchOfFSharp2(t *testing.T) {
 	}
 
 	if diff := math.Abs(of - want); diff > 0.01 {
-		t.Errorf("pitchOf(Note{pitch: \"F#\", octave: 2}, 440.0) = %.2f; want approximately %.2f", of, want)
+		t.Errorf("PitchOf(Note{pitch: \"F#\", octave: 2}, 440.0) = %.2f; want approximately %.2f", of, want)
 	}
 }
 
@@ -65,7 +65,7 @@ func TestPitchOfC5(t *testing.T) {
 	}
 
 	if diff := math.Abs(of - want); diff > 0.01 {
-		t.Errorf("pitchOf(Note{pitch: \"C\", octave: 5}, 440.0) = %.2f; want approximately %.2f", of, want)
+		t.Errorf("PitchOf(Note{pitch: \"C\", octave: 5}, 440.0) = %.2f; want approximately %.2f", of, want)
 	}
 }
 
@@ -78,17 +78,17 @@ func TestPitchOfB8(t *testing.T) {
 	}
 
 	if diff := math.Abs(of - want); diff > 0.01 {
-		t.Errorf("pitchOf(Note{pitch: \"B\", octave: 8}, 440.0) = %.2f; want approximately %.2f", of, want)
+		t.Errorf("PitchOf(Note{pitch: \"B\", octave: 8}, 440.0) = %.2f; want approximately %.2f", of, want)
 	}
 }
 func TestInvalidNoteName(t *testing.T) {
 	want_err := "Invalid note name: H"
 	of, err := Note{Pitch: "H", Octave: 8}.PitchOf(440.0)
 	if err == nil {
-		t.Fatalf("pitchOf(Note{pitch: \"H\", octave: 8}, 440.0) = %.2f; want contains(error(...), \"%s\")", of, want_err)
+		t.Fatalf("PitchOf(Note{pitch: \"H\", octave: 8}, 440.0) = %.2f; want contains(error(...), \"%s\")", of, want_err)
 	}
 
 	if !strings.Contains(err.Error(), want_err) {
-		t.Fatalf("pitchOf(Note{pitch: \"H\", octave: 8}, 440.0) = %.2f; want contains(error(...), \"%s\")", of, want_err)
+		t.Fatalf("PitchOf(Note{pitch: \"H\", octave: 8}, 440.0) = %.2f; want contains(error(...), \"%s\")", of, want_err)
 	}
 }

@@ -1,4 +1,4 @@
-package tuning
+package tuner
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ import (
 // A scientific-notation note is in the format <Note uppercase><accidental?><octave number>, i.e., C#4
 var re_valid_note = regexp.MustCompile(`^([A-G][#b]?)(\d+)`)
 
-func SprintStandards(standards []string) string {
+func sprintStandards(standards []string) string {
 	var result strings.Builder
 
 	for _, line := range standards {
@@ -23,7 +23,7 @@ func SprintStandards(standards []string) string {
 	return result.String()
 }
 
-func GetStandard(standards []string, name string) (string, error) {
+func getStandard(standards []string, name string) (string, error) {
 	check := name
 	if name[0] == '+' {
 		check = name[1:]
@@ -46,7 +46,7 @@ func GetStandard(standards []string, name string) (string, error) {
 	return "", fmt.Errorf("standard +%s not found", check)
 }
 
-func GetTuning(tuning_csv string) ([]note.Note, error) {
+func getTuning(tuning_csv string) ([]note.Note, error) {
 	tunings_raw := strings.Split(tuning_csv, ",")
 	var tunings []note.Note
 	for _, note_name := range tunings_raw {
@@ -66,14 +66,14 @@ func GetTuning(tuning_csv string) ([]note.Note, error) {
 		pitch := matches[1]
 		octave, err := strconv.Atoi(matches[2])
 		if err != nil {
-			// This is added as a safety net, should never be hit since the regexp
-			// ensures that the octave portion of the split is only digits (negatives
-			// implicitly excluded)
+			// Added as a safety net, should never be hit since the regexp ensures
+			// that the octave portion of the split is only digits
 			return nil, err
 		}
 
 		new_note, err := note.New(pitch, uint(octave))
 		if err != nil {
+			// Added as a safety net, negative octaves are not possible due to the regexp
 			return nil, err
 		}
 

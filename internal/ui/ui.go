@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"log"
+	"lxsavage/tuner1/internal/common"
 	"lxsavage/tuner1/pkg/note"
 	"lxsavage/tuner1/pkg/sysexit"
 	"lxsavage/tuner1/pkg/ui_helpers"
@@ -130,8 +131,6 @@ func (m UIModel) View() string {
 		panic(err)
 	}
 
-	var view_text strings.Builder
-
 	// Title box
 	var title_text strings.Builder
 
@@ -181,15 +180,16 @@ func (m UIModel) View() string {
 	instruction_box := instructions_text.String()
 
 	// Create the view
-	fmt.Fprintf(&view_text, "%s\n\n%s\n\n%s",
+	var view_box strings.Builder
+	fmt.Fprintf(&view_box, "%s\n\n%s\n\n%s",
 		title_box,
 		choice_box,
 		instruction_box)
 
-	return ui_helpers.CenterBox(view_text.String(), term_col_count)
+	return ui_helpers.CenterBox(view_box.String(), term_col_count)
 }
 
-func StartUI(tunings []note.Note, a4 float64, version string) int {
+func StartUI(tunings []note.Note, a4 float64, version string) error {
 	p_version = version
 
 	sr := beep.SampleRate(sample_rate)
@@ -200,9 +200,11 @@ func StartUI(tunings []note.Note, a4 float64, version string) int {
 
 	ui := tea.NewProgram(InitialUIModel(tunings, a4), tea.WithAltScreen())
 	if _, err := ui.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Critial error when running the tuner1 TUI:\n%s", err)
-		return sysexit.EX_SOFTWARE
+		return common.ExitError{
+			Code:    sysexit.EX_SOFTWARE,
+			Message: fmt.Sprintf("Critial error when running the tuner1 TUI:\n%s", err),
+		}
 	}
 
-	return sysexit.EX_OK
+	return nil
 }
