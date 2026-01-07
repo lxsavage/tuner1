@@ -25,10 +25,10 @@ const (
 	ANSI_TEXT_GRAY = "\033[1;30m"
 )
 
-const sample_rate = 44100 // Hz
-var p_version string
-
-var wave_synth synth.Synth
+var (
+	p_version  string
+	wave_synth synth.Synth
+)
 
 func (m UIModel) Init() tea.Cmd {
 	return nil
@@ -164,22 +164,14 @@ func (m UIModel) View() string {
 	return ui_helpers.CenterBox(view_box.String(), term_col_count)
 }
 
-func StartTUI(version string, tunings []note.Note, a4 float64, wave_type string) error {
+func StartTUI(version string, tunings []note.Note, a4 float64, synth_impl synth.Synth) error {
 	p_version = version
+	wave_synth = synth_impl
 
-	switch wave_type {
-	case "square":
-		wave_synth = synth.NewSquareSynth(sample_rate, 0)
-	case "sine":
-		fallthrough
-	default:
-		wave_synth = synth.NewSineSynth(sample_rate, 0)
-	}
-
-	sr := beep.SampleRate(sample_rate)
-	speaker.Init(sr, sr.N(time.Second/10))
-
+	sr := beep.SampleRate(wave_synth.GetSampleRate())
 	streamer := beep.StreamerFunc(wave_synth.SynthesizeWave)
+
+	speaker.Init(sr, sr.N(time.Second/10))
 	speaker.Play(streamer)
 
 	ui := tea.NewProgram(InitialUIModel(tunings, a4), tea.WithAltScreen())

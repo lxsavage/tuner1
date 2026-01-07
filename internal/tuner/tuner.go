@@ -1,3 +1,5 @@
+// Package tuner provides the core tuning functionality, including parsing tuning specifications,
+// managing tuning standards/templates, and coordinating the tuning interface.
 package tuner
 
 import (
@@ -6,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"lxsavage/tuner1/internal/common"
+	"lxsavage/tuner1/internal/synth"
 	"lxsavage/tuner1/internal/ui"
 	"lxsavage/tuner1/pkg/editor"
 	"lxsavage/tuner1/pkg/sysexit"
@@ -13,6 +16,8 @@ import (
 	"path/filepath"
 	"strings"
 )
+
+const sample_rate = 44100 // Hz
 
 func getStandardsConfigFilepath() string {
 	config_dir, err := os.UserConfigDir()
@@ -131,5 +136,17 @@ func Execute(program_version string, show_version *bool, list_templates *bool, e
 		}
 	}
 
-	return ui.StartTUI(program_version, tunings, *reference, *wave_type)
+	var wave_synth synth.Synth
+	switch *wave_type {
+	case "square":
+		wave_synth = synth.NewSquareSynth(sample_rate, 0)
+	case "sawtooth":
+		wave_synth = synth.NewSawtoothSynth(sample_rate, 0)
+	case "sine":
+		fallthrough
+	default:
+		wave_synth = synth.NewSineSynth(sample_rate, 0)
+	}
+
+	return ui.StartTUI(program_version, tunings, *reference, wave_synth)
 }

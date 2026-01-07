@@ -39,3 +39,7 @@ func (ss *sine_synth) SynthesizeWave(samples [][2]float64) (int, bool) {
 
 	return len(samples), true
 }
+
+func (ss *sine_synth) GetSampleRate() float64 {
+	return ss.current_sample_rate
+}

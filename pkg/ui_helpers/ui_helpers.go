@@ -1,3 +1,4 @@
+// Package ui_helpers provides utilities for formatting and displaying text in terminal UIs.
 package ui_helpers
 
 import (
@@ -12,8 +13,7 @@ var re_ansi_escape = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
 func visibleLen(val string) int {
 	clean := re_ansi_escape.ReplaceAllString(val, "")
 	count := 0
-	runes := []rune(clean)
-	for _, r := range runes {
+	for _, r := range clean {
 		if unicode.IsPrint(r) {
 			count++
 		}
@@ -21,8 +21,8 @@ func visibleLen(val string) int {
 	return count
 }
 
-// Pads the left side of the string so that the result is at least min_length
-// visible runes wide
+// LeftPadLine pads the left side of the string so that the result is at least
+// min_length visible runes wide
 func LeftPadLine(val string, min_length int, wrap_with rune) string {
 	if len(val) >= min_length {
 		return val
@@ -38,8 +38,8 @@ func LeftPadLine(val string, min_length int, wrap_with rune) string {
 	return result.String()
 }
 
-// Pads the right side of the string so that the result is at least min_length
-// visible runes wide
+// RightPadLine pads the right side of the string so that the result is at least
+// min_length visible runes wide
 func RightPadLine(val string, min_length int, wrap_with rune) string {
 	if len(val) >= min_length {
 		return val
@@ -55,7 +55,7 @@ func RightPadLine(val string, min_length int, wrap_with rune) string {
 	return result.String()
 }
 
-// Wraps all strings in a single-line border
+// WrapBox wraps all strings in a single-line border
 func WrapBox(val string, x_pad int, y_pad int) string {
 	lines := strings.Split(val, "\n")
 	maxlinelen := visibleLen(lines[0])
@@ -89,7 +89,7 @@ func WrapBox(val string, x_pad int, y_pad int) string {
 	return result.String()
 }
 
-// Centers all of the lines in val based on the terminal width
+// CenterBox centers all of the lines in val based on the width of col_count
 func CenterBox(val string, col_count int) string {
 	var result strings.Builder
 	lines := strings.SplitSeq(val, "\n")

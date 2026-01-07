@@ -23,7 +23,7 @@ func main() {
 	standards := flag.String("standards", "",
 		"an alternate path to a standards.txt template file")
 	wave_type := flag.String("wave", "sine",
-		"the synth wave type to use (sine or square)")
+		"the synth wave type to use (sine, square, or sawtooth)")
 
 	flag.Parse()
 
