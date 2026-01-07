@@ -1,3 +1,4 @@
+// Package note provides a type and functions for working with musical notes.
 package note
 
 import (

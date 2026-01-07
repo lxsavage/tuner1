@@ -1,3 +1,4 @@
+// Package sysexit provides constants for exit codes as defined by BSD sysexits manpage.
 package sysexit
 
 // Exit codes as defined by BSD sysexits manpage

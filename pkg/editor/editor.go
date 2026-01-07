@@ -1,3 +1,4 @@
+// Package editor provides a function to edit a file using the system's default editor.
 package editor
 
 import (

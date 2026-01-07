@@ -9,6 +9,7 @@ import (
 	"os"
 )
 
+// Version will be set during a CI build to the version string.
 var Version = "localbuild"
 
 func main() {
