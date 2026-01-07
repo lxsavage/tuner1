@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"log"
 	"lxsavage/tuner1/internal/common"
+	"lxsavage/tuner1/internal/synth"
 	"lxsavage/tuner1/pkg/note"
 	"lxsavage/tuner1/pkg/sysexit"
 	"lxsavage/tuner1/pkg/ui_helpers"
-	"math"
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -27,31 +26,9 @@ const (
 )
 
 const sample_rate = 44100 // Hz
-
 var p_version string
 
-var (
-	freq     = 0.0 // Hz
-	mu_freq  sync.RWMutex
-	wave_pos int
-)
-
-// Generate a sine wave in place in samples. Returns the amount of samples
-// after the operation, as well as if the operation was successful.
-func generateSineWave(samples [][2]float64) (int, bool) {
-	mu_freq.RLock()
-	f := freq
-	mu_freq.RUnlock()
-
-	for i := range samples {
-		v := math.Sin(2 * math.Pi * float64(wave_pos) * f / sample_rate)
-		samples[i][0] = v
-		samples[i][1] = v
-		wave_pos++
-	}
-
-	return len(samples), true
-}
+var wave_synth synth.Synth
 
 func (m UIModel) Init() tea.Cmd {
 	return nil
@@ -107,19 +84,17 @@ func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if selection_changed && m.selected < len(m.choices) {
-		var newFreq float64 = 0
+		var new_freq float64 = 0
 		if m.selected >= 0 {
 			var err error
-			newFreq, err = m.choices[m.selected].PitchOf(m.a4)
+			new_freq, err = m.choices[m.selected].PitchOf(m.a4)
 
 			if err != nil {
 				log.Fatal(err)
 			}
 		}
 
-		mu_freq.Lock()
-		freq = newFreq
-		mu_freq.Unlock()
+		wave_synth.SetWaveFrequency(new_freq)
 	}
 
 	return m, nil
@@ -189,13 +164,22 @@ func (m UIModel) View() string {
 	return ui_helpers.CenterBox(view_box.String(), term_col_count)
 }
 
-func StartUI(tunings []note.Note, a4 float64, version string) error {
+func StartTUI(version string, tunings []note.Note, a4 float64, wave_type string) error {
 	p_version = version
+
+	switch wave_type {
+	case "square":
+		wave_synth = synth.NewSquareSynth(sample_rate, 0)
+	case "sine":
+		fallthrough
+	default:
+		wave_synth = synth.NewSineSynth(sample_rate, 0)
+	}
 
 	sr := beep.SampleRate(sample_rate)
 	speaker.Init(sr, sr.N(time.Second/10))
 
-	streamer := beep.StreamerFunc(generateSineWave)
+	streamer := beep.StreamerFunc(wave_synth.SynthesizeWave)
 	speaker.Play(streamer)
 
 	ui := tea.NewProgram(InitialUIModel(tunings, a4), tea.WithAltScreen())

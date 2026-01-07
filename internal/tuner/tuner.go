@@ -55,7 +55,7 @@ func listTemplates(path_std_file string) {
 	fmt.Print(sprintStandards(standards))
 }
 
-func Execute(program_version string, show_version *bool, list_templates *bool, edit_standards *bool, tuning_template *string, reference *float64, standards *string) error {
+func Execute(program_version string, show_version *bool, list_templates *bool, edit_standards *bool, tuning_template *string, reference *float64, standards *string, wave_type *string) error {
 	if *show_version {
 		fmt.Println(program_version)
 		return nil
@@ -131,5 +131,5 @@ func Execute(program_version string, show_version *bool, list_templates *bool, e
 		}
 	}
 
-	return ui.StartUI(tunings, *reference, program_version)
+	return ui.StartTUI(program_version, tunings, *reference, *wave_type)
 }
