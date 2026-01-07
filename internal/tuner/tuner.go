@@ -6,7 +6,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"log"
 	"lxsavage/tuner1/internal/common"
 	"lxsavage/tuner1/internal/synth"
 	"lxsavage/tuner1/internal/ui"
@@ -19,13 +18,16 @@ import (
 
 const sample_rate = 44100 // Hz
 
-func getStandardsConfigFilepath() string {
+func getStandardsConfigFilepath() (string, error) {
 	config_dir, err := os.UserConfigDir()
 	if err != nil {
-		log.Fatal(err)
+		return "", common.ExitError{
+			Code:    sysexit.EX_IOERR,
+			Message: "Failed to get user config directory: " + err.Error(),
+		}
 	}
 
-	return filepath.Join(config_dir, "tuner1", "standards.txt")
+	return filepath.Join(config_dir, "tuner1", "standards.txt"), nil
 }
 
 func getStandardsFileContents(path_std_file string) ([]string, error) {
@@ -33,7 +35,10 @@ func getStandardsFileContents(path_std_file string) ([]string, error) {
 
 	std_file, err := os.Open(path_std_file)
 	if err != nil {
-		return nil, err
+		return nil, common.ExitError{
+			Code:    sysexit.EX_IOERR,
+			Message: "Failed to open standards file: " + err.Error(),
+		}
 	}
 	defer std_file.Close()
 
@@ -50,14 +55,17 @@ func getStandardsFileContents(path_std_file string) ([]string, error) {
 	return res, nil
 }
 
-func listTemplates(path_std_file string) {
+func listTemplates(path_std_file string) error {
 	standards, err := getStandardsFileContents(path_std_file)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to read standards file: %s\n", err)
-		os.Exit(sysexit.EX_IOERR)
+		return common.ExitError{
+			Code:    sysexit.EX_IOERR,
+			Message: "Failed to read standards file: " + err.Error(),
+		}
 	}
 
 	fmt.Print(sprintStandards(standards))
+	return nil
 }
 
 func Execute(program_version string, show_version *bool, list_templates *bool, edit_standards *bool, tuning_template *string, reference *float64, standards *string, wave_type *string) error {
@@ -70,12 +78,15 @@ func Execute(program_version string, show_version *bool, list_templates *bool, e
 
 	path_std_file := *standards
 	if should_use_default_std_file && len(path_std_file) == 0 {
-		path_std_file = getStandardsConfigFilepath()
+		var err error
+		path_std_file, err = getStandardsConfigFilepath()
+		if err != nil {
+			return err
+		}
 	}
 
 	if *list_templates {
-		listTemplates(path_std_file)
-		return nil
+		return listTemplates(path_std_file)
 	}
 
 	if *edit_standards {
@@ -88,9 +99,6 @@ func Execute(program_version string, show_version *bool, list_templates *bool, e
 						path_std_file),
 				}
 			}
-			fmt.Fprintf(os.Stderr, "Unable to launch editor: %s\n", err)
-			os.Exit(sysexit.EX_UNAVAILABLE)
-
 			return common.ExitError{
 				Code:    sysexit.EX_UNAVAILABLE,
 				Message: "Unable to launch editor: " + err.Error(),
