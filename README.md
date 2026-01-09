@@ -73,8 +73,6 @@ can be shown with `tuner1 -h`.
 
 - `tuner1 -ls`: List templates available
 - `tuner1 -tuning +<template name>`: Launch using a template by name
-- `tuner1 -tuning "<csv of scientific-notation note names from low to high>"`:
-  Launch using a manually-defined CSV tuning
 
 ## Editing templates
 
