@@ -7,9 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"lxsavage/tuner1/internal/common"
+	"lxsavage/tuner1/internal/editor"
 	"lxsavage/tuner1/internal/synth"
-	"lxsavage/tuner1/internal/ui"
-	"lxsavage/tuner1/pkg/editor"
+	"lxsavage/tuner1/internal/tui"
 	"lxsavage/tuner1/pkg/sysexit"
 	"os"
 	"path/filepath"
@@ -68,11 +68,12 @@ func listTemplates(path_std_file string) error {
 	return nil
 }
 
-func Execute(program_version string, show_version *bool, list_templates *bool, edit_standards *bool, tuning_template *string, reference *float64, standards *string, wave_type *string) error {
+func Execute(program_version string, a4_pitch *float64, show_version, list_templates, edit_standards, debug_mode *bool, tuning_template, standards, wave_type *string) error {
 	if *show_version {
 		fmt.Println(program_version)
 		return nil
 	}
+
 	is_template := len(*tuning_template) > 0 && (*tuning_template)[0] == '+'
 	should_use_default_std_file := *edit_standards || *list_templates || is_template
 
@@ -144,17 +145,6 @@ func Execute(program_version string, show_version *bool, list_templates *bool, e
 		}
 	}
 
-	var wave_synth synth.Synth
-	switch *wave_type {
-	case "square":
-		wave_synth = synth.NewSquareSynth(sample_rate, 0)
-	case "sawtooth":
-		wave_synth = synth.NewSawtoothSynth(sample_rate, 0)
-	case "sine":
-		fallthrough
-	default:
-		wave_synth = synth.NewSineSynth(sample_rate, 0)
-	}
-
-	return ui.StartTUI(program_version, tunings, *reference, wave_synth)
+	wave_synth := synth.NewSynth(*wave_type, sample_rate)
+	return tui.StartTUI(program_version, *debug_mode, tunings, *a4_pitch, wave_synth)
 }

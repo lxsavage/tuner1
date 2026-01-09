@@ -49,17 +49,17 @@ func (n Note) String() string {
 	return fmt.Sprintf(format_specifier, n.Pitch, n.Octave)
 }
 
-// Determine the pitch in Hertz of a note in scientific notation with a given A4 reference.
+// PitchOf determines the pitch in Hertz of a note in scientific notation with a given A4 reference.
 //
 // Generally, A4=440.0 Hz, but it may be different in some contexts.
-func (note Note) PitchOf(a4 float64) (float64, error) {
+func (n Note) PitchOf(a4 float64) (float64, error) {
 	var note_offset int
 	var note_exists bool
-	if note_offset, note_exists = pitch_offsets[note.Pitch]; !note_exists {
-		return 0.0, errors.New("Invalid note name: " + note.Pitch)
+	if note_offset, note_exists = pitch_offsets[n.Pitch]; !note_exists {
+		return 0.0, errors.New("Invalid note name: " + n.Pitch)
 	}
 
-	octave_offset := int(note.Octave) - 4
+	octave_offset := int(n.Octave) - 4
 	semitone_offset := note_offset + (octave_offset * 12)
 
 	// A4 * 2^(n/12) where n is the number of semitones away from A4

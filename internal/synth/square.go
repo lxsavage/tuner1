@@ -11,7 +11,7 @@ type square_synth struct {
 	phase               float64
 }
 
-func NewSquareSynth(sample_rate float64, freq float64) Synth {
+func NewSquareSynth(sample_rate, freq float64) Synth {
 	return &square_synth{
 		current_sample_rate: sample_rate,
 		freq:                freq,

@@ -12,3 +12,19 @@ type Synth interface {
 	// Returns the sample rate of the synth in Hz.
 	GetSampleRate() float64
 }
+
+func NewSynth(wave_type string, sample_rate float64) Synth {
+	var wave_synth Synth
+	switch wave_type {
+	case "square":
+		wave_synth = NewSquareSynth(sample_rate, 0)
+	case "sawtooth":
+		wave_synth = NewSawtoothSynth(sample_rate, 0)
+	case "sine":
+		fallthrough
+	default:
+		wave_synth = NewSineSynth(sample_rate, 0)
+	}
+
+	return wave_synth
+}

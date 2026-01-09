@@ -1,4 +1,4 @@
-package ui
+package tui
 
 import (
 	"fmt"
@@ -100,24 +100,30 @@ func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m UIModel) View() string {
-	term_col_count, _, err := term.GetSize(os.Stdout.Fd())
-	if err != nil {
-		panic(err)
-	}
+func renderTitle(m UIModel) string {
+	title_text := "tuner1"
 
-	// Title box
-	var title_text strings.Builder
-
-	title_text.WriteString("tuner1")
 	if m.selected >= 0 {
-		title_text.WriteString(" 📢")
+		title_text += " 📢"
+
+		if m.debug {
+			freq, err := m.choices[m.selected].PitchOf(m.a4)
+			if err != nil {
+				panic(err)
+			}
+
+			title_text += fmt.Sprintf(" - Note frequency: %.2f Hz", freq)
+		}
 	}
-	fmt.Fprintf(&title_text, "\n%s", p_version)
 
-	title_box := title_text.String()
+	if m.debug {
+		title_text += "\n" + p_version
+	}
 
-	// Choice box
+	return title_text
+}
+
+func renderChoices(m UIModel) string {
 	var index_line strings.Builder
 	var note_line strings.Builder
 	var interaction_line strings.Builder
@@ -140,9 +146,10 @@ func (m UIModel) View() string {
 	}
 
 	choice_box := fmt.Sprintf("%s\n%s\n%s", index_line.String(), note_line.String(), interaction_line.String())
-	choice_box = ui_helpers.WrapBox(choice_box, 1, 0)
+	return ui_helpers.WrapBox(choice_box, 1, 0)
+}
 
-	// Instruction box
+func renderKeymap(m UIModel) string {
 	var instructions_text strings.Builder
 	instructions_text.WriteRune('[')
 	for i := range m.choices {
@@ -152,19 +159,31 @@ func (m UIModel) View() string {
 	instructions_text.WriteString("] - select string by #, [↑ ↓/jk] - next/previous string\n")
 	instructions_text.WriteString("[← →/hl] - move, [space/enter] - select, m - mute, q - quit\n")
 
-	instruction_box := instructions_text.String()
+	return instructions_text.String()
+}
+
+func (m UIModel) View() string {
+	term_col_count, _, err := term.GetSize(os.Stdout.Fd())
+	if err != nil {
+		panic(err)
+	}
+
+	// Render TUI sections
+	title_section := renderTitle(m)
+	choice_section := renderChoices(m)
+	keymap_section := renderKeymap(m)
 
 	// Create the view
 	var view_box strings.Builder
 	fmt.Fprintf(&view_box, "%s\n\n%s\n\n%s",
-		title_box,
-		choice_box,
-		instruction_box)
+		title_section,
+		choice_section,
+		keymap_section)
 
 	return ui_helpers.CenterBox(view_box.String(), term_col_count)
 }
 
-func StartTUI(version string, tunings []note.Note, a4 float64, synth_impl synth.Synth) error {
+func StartTUI(version string, debug bool, tunings []note.Note, a4 float64, synth_impl synth.Synth) error {
 	p_version = version
 	wave_synth = synth_impl
 
@@ -174,8 +193,8 @@ func StartTUI(version string, tunings []note.Note, a4 float64, synth_impl synth.
 	speaker.Init(sr, sr.N(time.Second/10))
 	speaker.Play(streamer)
 
-	ui := tea.NewProgram(InitialUIModel(tunings, a4), tea.WithAltScreen())
-	if _, err := ui.Run(); err != nil {
+	tui := tea.NewProgram(InitialUIModel(tunings, a4, debug), tea.WithAltScreen())
+	if _, err := tui.Run(); err != nil {
 		return common.ExitError{
 			Code:    sysexit.EX_SOFTWARE,
 			Message: fmt.Sprintf("Critial error when running the tuner1 TUI:\n%s", err),

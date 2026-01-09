@@ -56,7 +56,7 @@ func RightPadLine(val string, min_length int, wrap_with rune) string {
 }
 
 // WrapBox wraps all strings in a single-line border
-func WrapBox(val string, x_pad int, y_pad int) string {
+func WrapBox(val string, x_pad, y_pad int) string {
 	lines := strings.Split(val, "\n")
 	maxlinelen := visibleLen(lines[0])
 

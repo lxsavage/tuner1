@@ -19,17 +19,19 @@ func main() {
 		"open the standards file with the default EDITOR.")
 	tuning_template := flag.String("tuning", "",
 		"a CSV list of notes for a tuning, or '+' followed by a template name")
-	reference := flag.Float64("A4", 440.0,
+	a4_pitch := flag.Float64("A4", 440.0,
 		"the reference pitch to tune A4 to in Hertz")
 	standards := flag.String("standards", "",
 		"an alternate path to a standards.txt template file")
 	wave_type := flag.String("wave", "sine",
 		"the synth wave type to use (sine, square, or sawtooth)")
+	debug_mode := flag.Bool("debug", false,
+		"display additional debug information during runtime")
 
 	flag.Parse()
 
-	if err := tuner.Execute(Version, show_version, list_templates, edit_standards,
-		tuning_template, reference, standards, wave_type); err != nil {
+	if err := tuner.Execute(Version, a4_pitch, show_version, list_templates, edit_standards,
+		debug_mode, tuning_template, standards, wave_type); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 
 		var err_exit common.ExitError

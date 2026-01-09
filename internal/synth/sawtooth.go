@@ -11,7 +11,7 @@ type sawtooth_synth struct {
 	phase               float64
 }
 
-func NewSawtoothSynth(sample_rate float64, freq float64) Synth {
+func NewSawtoothSynth(sample_rate, freq float64) Synth {
 	return &sawtooth_synth{
 		current_sample_rate: sample_rate,
 		freq:                freq,
