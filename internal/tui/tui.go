@@ -116,11 +116,7 @@ func renderTitle(m UIModel) string {
 		}
 	}
 
-	if m.debug {
-		title_text += "\n" + p_version
-	}
-
-	return title_text
+	return title_text + "\n" + p_version
 }
 
 func renderChoices(m UIModel) string {
