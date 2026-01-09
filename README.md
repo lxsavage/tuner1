@@ -89,7 +89,7 @@ This file is by default located at:
 - Linux: `~/.config/tuner1/standards.txt`
 - Windows: `%APPDATA%\tuner1\standards.txt`
 
-Afterwards, call the template with `go run . -tuning +<template name>`
+Afterwards, call the template with `tuner1 -tuning +<template name>`
 
 ---
 
