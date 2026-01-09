@@ -1,3 +1,4 @@
+// Package tui provides the terminal user interface for the tuner1 application.
 package tui
 
 import (
@@ -10,7 +11,6 @@ import (
 	"lxsavage/tuner1/pkg/ui_helpers"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -19,22 +19,16 @@ import (
 	"github.com/gopxl/beep/speaker"
 )
 
-const (
-	ANSI_RESET     = "\033[0m"
-	ANSI_BG_BLUE   = "\033[44m"
-	ANSI_TEXT_GRAY = "\033[1;30m"
-)
-
 var (
 	p_version  string
 	wave_synth synth.Synth
 )
 
-func (m UIModel) Init() tea.Cmd {
+func (m model) Init() tea.Cmd {
 	return nil
 }
 
-func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	selection_changed := false
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -100,83 +94,18 @@ func (m UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func renderTitle(m UIModel) string {
-	title_text := "tuner1"
-
-	if m.selected >= 0 {
-		title_text += " 📢"
-
-		if m.debug {
-			freq, err := m.choices[m.selected].PitchOf(m.a4)
-			if err != nil {
-				panic(err)
-			}
-
-			title_text += fmt.Sprintf(" - Note frequency: %.2f Hz", freq)
-		}
-	}
-
-	return title_text + "\n" + p_version
-}
-
-func renderChoices(m UIModel) string {
-	var index_line strings.Builder
-	var note_line strings.Builder
-	var interaction_line strings.Builder
-
-	for i, choice := range m.choices {
-		line_highlight := ""
-		if m.cursor == i {
-			line_highlight = ANSI_BG_BLUE
-		}
-
-		checked := " "
-		if m.selected == i {
-			checked = "•"
-		}
-
-		padded_choice := ui_helpers.LeftPadLine(choice.String(), 3, ' ')
-		fmt.Fprintf(&index_line, "%s  %d  %s", line_highlight, i+1, ANSI_RESET)
-		fmt.Fprintf(&note_line, "%s %s %s", line_highlight, padded_choice, ANSI_RESET)
-		fmt.Fprintf(&interaction_line, "%s  %s  %s", line_highlight, checked, ANSI_RESET)
-	}
-
-	choice_box := fmt.Sprintf("%s\n%s\n%s", index_line.String(), note_line.String(), interaction_line.String())
-	return ui_helpers.WrapBox(choice_box, 1, 0)
-}
-
-func renderKeymap(m UIModel) string {
-	var instructions_text strings.Builder
-	instructions_text.WriteRune('[')
-	for i := range m.choices {
-		instructions_text.WriteString(strconv.Itoa(i + 1))
-	}
-
-	instructions_text.WriteString("] - select string by #, [↑ ↓/jk] - next/previous string\n")
-	instructions_text.WriteString("[← →/hl] - move, [space/enter] - select, m - mute, q - quit\n")
-
-	return instructions_text.String()
-}
-
-func (m UIModel) View() string {
+func (m model) View() string {
 	term_col_count, _, err := term.GetSize(os.Stdout.Fd())
 	if err != nil {
 		panic(err)
 	}
 
-	// Render TUI sections
 	title_section := renderTitle(m)
 	choice_section := renderChoices(m)
 	keymap_section := renderKeymap(m)
 
-	// Create the view
-	var view_box strings.Builder
-	fmt.Fprintf(&view_box, "%s\n\n%s\n\n%s",
-		title_section,
-		choice_section,
-		keymap_section)
-
-	return ui_helpers.CenterBox(view_box.String(), term_col_count)
+	view_box := fmt.Sprintf("%s\n\n%s\n\n%s", title_section, choice_section, keymap_section)
+	return ui_helpers.CenterBox(view_box, term_col_count)
 }
 
 func StartTUI(version string, debug bool, tunings []note.Note, a4 float64, synth_impl synth.Synth) error {
@@ -188,6 +117,7 @@ func StartTUI(version string, debug bool, tunings []note.Note, a4 float64, synth
 
 	speaker.Init(sr, sr.N(time.Second/10))
 	speaker.Play(streamer)
+	defer speaker.Close()
 
 	tui := tea.NewProgram(InitialUIModel(tunings, a4, debug), tea.WithAltScreen())
 	if _, err := tui.Run(); err != nil {

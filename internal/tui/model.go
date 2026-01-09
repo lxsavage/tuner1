@@ -2,7 +2,7 @@ package tui
 
 import "lxsavage/tuner1/pkg/note"
 
-type UIModel struct {
+type model struct {
 	choices  []note.Note
 	cursor   int
 	selected int
@@ -10,8 +10,8 @@ type UIModel struct {
 	debug    bool
 }
 
-func InitialUIModel(tuning []note.Note, a4 float64, debug bool) UIModel {
-	return UIModel{
+func InitialUIModel(tuning []note.Note, a4 float64, debug bool) model {
+	return model{
 		choices:  tuning,
 		cursor:   0,
 		selected: -1, // -1 denotes muted
