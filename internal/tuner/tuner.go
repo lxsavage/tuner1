@@ -68,16 +68,16 @@ func listTemplates(path_std_file string) error {
 	return nil
 }
 
-func Execute(program_version string, a4_pitch *float64, show_version, list_templates, edit_standards, debug_mode *bool, tuning_template, standards, wave_type *string) error {
-	if *show_version {
-		fmt.Println(program_version)
+func Execute(d Config) error {
+	if d.ShowVersion {
+		fmt.Println(d.ProgramVersion)
 		return nil
 	}
 
-	is_template := len(*tuning_template) > 0 && (*tuning_template)[0] == '+'
-	should_use_default_std_file := *edit_standards || *list_templates || is_template
+	is_template := len(d.TuningTemplate) > 0 && (d.TuningTemplate)[0] == '+'
+	should_use_default_std_file := d.EditStandards || d.ListTemplates || is_template
 
-	path_std_file := *standards
+	path_std_file := d.StandardsPath
 	if should_use_default_std_file && len(path_std_file) == 0 {
 		var err error
 		path_std_file, err = getStandardsConfigFilepath()
@@ -86,11 +86,11 @@ func Execute(program_version string, a4_pitch *float64, show_version, list_templ
 		}
 	}
 
-	if *list_templates {
+	if d.ListTemplates {
 		return listTemplates(path_std_file)
 	}
 
-	if *edit_standards {
+	if d.EditStandards {
 		if err := editor.EditFile(path_std_file); err != nil {
 			if errors.Is(err, os.ErrNotExist) {
 				return common.ExitError{
@@ -108,7 +108,7 @@ func Execute(program_version string, a4_pitch *float64, show_version, list_templ
 		return nil
 	}
 
-	if len(*tuning_template) == 0 {
+	if len(d.TuningTemplate) == 0 {
 		return common.ExitError{
 			Code: sysexit.EX_USAGE,
 			Message: fmt.Sprintf("Please pass in a tuning specifier\n\nTry:\n"+
@@ -116,8 +116,8 @@ func Execute(program_version string, a4_pitch *float64, show_version, list_templ
 		}
 	}
 
-	tuning_csv := *tuning_template
-	if (*tuning_template)[0] == '+' {
+	tuning_csv := d.TuningTemplate
+	if (d.TuningTemplate)[0] == '+' {
 		standards, err := getStandardsFileContents(path_std_file)
 		if err != nil {
 			return common.ExitError{
@@ -126,7 +126,7 @@ func Execute(program_version string, a4_pitch *float64, show_version, list_templ
 			}
 		}
 
-		csv, err := getStandard(standards, *tuning_template)
+		csv, err := getStandard(standards, d.TuningTemplate)
 		if err != nil {
 			return common.ExitError{
 				Code:    sysexit.EX_DATAERR,
@@ -145,6 +145,11 @@ func Execute(program_version string, a4_pitch *float64, show_version, list_templ
 		}
 	}
 
-	wave_synth := synth.NewSynth(*wave_type, sample_rate)
-	return tui.StartTUI(program_version, *debug_mode, tunings, *a4_pitch, wave_synth)
+	return tui.StartTUI(tui.Config{
+		A4:        d.A4,
+		Version:   d.ProgramVersion,
+		Tunings:   tunings,
+		Synth:     synth.NewSynth(d.WaveType, sample_rate),
+		DebugMode: d.DebugMode,
+	})
 }

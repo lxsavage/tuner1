@@ -7,6 +7,7 @@ import (
 	"lxsavage/tuner1/internal/common"
 	"lxsavage/tuner1/internal/tuner"
 	"os"
+	"slices"
 )
 
 // Version will be set during a CI build to the version string.
@@ -30,13 +31,32 @@ func main() {
 
 	flag.Parse()
 
-	if err := tuner.Execute(Version, a4_pitch, show_version, list_templates, edit_standards,
-		debug_mode, tuning_template, standards, wave_type); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+	wave := "sine"
+	possible_waves := []string{"sine", "square", "sawtooth"}
+	if slices.Contains(possible_waves, *wave_type) {
+		wave = *wave_type
+	}
 
-		var err_exit common.ExitError
-		if errors.As(err, &err_exit) {
-			os.Exit(err_exit.Code)
-		}
+	err := tuner.Execute(tuner.Config{
+		ProgramVersion: Version,
+		WaveType:       wave,
+		A4:             *a4_pitch,
+		TuningTemplate: *tuning_template,
+		StandardsPath:  *standards,
+		ShowVersion:    *show_version,
+		ListTemplates:  *list_templates,
+		EditStandards:  *edit_standards,
+		DebugMode:      *debug_mode,
+	})
+
+	if err == nil {
+		return
+	}
+
+	fmt.Fprintln(os.Stderr, err)
+
+	var err_exit common.ExitError
+	if errors.As(err, &err_exit) {
+		os.Exit(err_exit.Code)
 	}
 }

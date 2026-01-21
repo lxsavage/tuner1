@@ -6,7 +6,6 @@ import (
 	"log"
 	"lxsavage/tuner1/internal/common"
 	"lxsavage/tuner1/internal/synth"
-	"lxsavage/tuner1/pkg/note"
 	"lxsavage/tuner1/pkg/sysexit"
 	"lxsavage/tuner1/pkg/ui_helpers"
 	"os"
@@ -108,9 +107,9 @@ func (m model) View() string {
 	return ui_helpers.CenterBox(view_box, term_col_count)
 }
 
-func StartTUI(version string, debug bool, tunings []note.Note, a4 float64, synth_impl synth.Synth) error {
-	p_version = version
-	wave_synth = synth_impl
+func StartTUI(d Config) error {
+	p_version = d.Version
+	wave_synth = d.Synth
 
 	sr := beep.SampleRate(wave_synth.GetSampleRate())
 	streamer := beep.StreamerFunc(wave_synth.SynthesizeWave)
@@ -119,7 +118,7 @@ func StartTUI(version string, debug bool, tunings []note.Note, a4 float64, synth
 	speaker.Play(streamer)
 	defer speaker.Close()
 
-	tui := tea.NewProgram(InitialUIModel(tunings, a4, debug), tea.WithAltScreen())
+	tui := tea.NewProgram(InitialUIModel(d.Tunings, d.A4, d.DebugMode), tea.WithAltScreen())
 	if _, err := tui.Run(); err != nil {
 		return common.ExitError{
 			Code:    sysexit.EX_SOFTWARE,
