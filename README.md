@@ -13,8 +13,9 @@ A basic guitar tuner TUI with customizable templates
 
 #### Install
 
-If this install script does not support your platform/architecture, the program
-will have to be [manually built and installed](#manual-buildinstall).
+> [!NOTE]
+> If this install script does not support your platform/architecture, the program
+> will have to be [manually built and installed](#manual-buildinstall).
 
 MacOS and Linux
 
@@ -48,9 +49,10 @@ In order to build this project, the Golang CLI needs to be installed and on
 path. For more information on how to do this, check the
 [Golang install guide](https://go.dev/doc/install).
 
-**Note for Linux systems: the build depends on the ALSA dev library (e.g.
-`libasound2-dev` on Ubuntu), which will also need to be installed through your
-respective package manager.**
+> [!NOTE]
+> For Linux systems: the build depends on the ALSA dev library (e.g.
+> `libasound2-dev` on Ubuntu), which will also need to be installed through your
+> respective package manager.
 
 To build and install, use `make install`.
 
@@ -62,9 +64,10 @@ then running `make upgrade`.
 
 Uninstallation is just `make uninstall`.
 
-**Note: by default, this will be installed under `/usr/local/bin`. This can be
-changed by adjusting the makefile `INSTALL_DIR` variable to the intended path
-before running any of these make commands.**
+> [!NOTE]
+> By default, this will be installed under `/usr/local/bin`. This can be changed
+> by adjusting the makefile `INSTALL_DIR` variable to the intended path before
+> running any of these make commands.
 
 ## Usage
 
