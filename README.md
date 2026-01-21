@@ -49,65 +49,64 @@ In order to build this project, the Golang CLI needs to be installed and on
 path. For more information on how to do this, check the
 [Golang install guide](https://go.dev/doc/install).
 
-> [!NOTE]
+> [!IMPORTANT]
 > For Linux systems: the build depends on the ALSA dev library (e.g.
 > `libasound2-dev` on Ubuntu), which will also need to be installed through your
 > respective package manager.
 
 To build and install, use `make install`.
 
-The program adds itself under `/usr/local/bin/` and creates a template config
-under `~/.config/tuner1/standards.txt`.
+> [!NOTE]
+> By default, this will be installed under `/usr/local/bin`. This can be changed
+> by adjusting the makefile `INSTALL_DIR` variable to the intended path before
+> running any of these make commands.
 
 Upgrading from a previous version is as simple as pulling the latest changes,
 then running `make upgrade`.
 
 Uninstallation is just `make uninstall`.
 
-> [!NOTE]
-> By default, this will be installed under `/usr/local/bin`. This can be changed
-> by adjusting the makefile `INSTALL_DIR` variable to the intended path before
-> running any of these make commands.
-
 ## Usage
 
-For most use cases, these commands will be sufficient, but additional features
-can be shown with `tuner1 -h`.
+> [!TIP]
+> Additional features can be shown with `tuner1 -h`
 
 - `tuner1 -ls`: List templates available
 - `tuner1 -tuning +<template name>`: Launch using a template by name
 
 ## Editing templates
 
-To change templates, edit standards.txt to add/remove K:V pairs for
-templates in the format:
+To change templates, use `tuner1 -edit-standards` to open the standards file in
+your default editor. These templates are in the format:
 
 ```plain
 <template name>:<csv of scientific-notation note names from low to high>
 ```
 
-This file is by default located at:
+There should be at most one template per-line, with empty lines ignored. After
+you are done editing, call the template with `tuner1 -tuning +<template name>`.
 
-- MacOS: `~/Library/Application Support/tuner1/standards.txt`
-- Linux: `~/.config/tuner1/standards.txt`
-- Windows: `%APPDATA%\tuner1\standards.txt`
+> [!TIP]
+>  The configuration file location is dependent on your OS:
+>
+> - MacOS: `~/Library/Application Support/tuner1/standards.txt`
+> - Linux: `~/.config/tuner1/standards.txt`
+> - Windows: `%APPDATA%\tuner1\standards.txt`
 
-Afterwards, call the template with `tuner1 -tuning +<template name>`
 
----
-
-It is also possible to test a template csv by manually calling the TUI with
-the template:
-
-```sh
-tuner1 -tuning "<csv of scientific-notation note names from low to high>"
-```
-
-For example, the following is equivalent to the `+e-standard` template:
-
-```sh
-tuner1 -tuning "E2,A2,D3,G3,B3,E4"
-```
+> [!TIP]
+> It is also possible to test a template csv by manually calling the TUI with
+> the template:
+>
+> ```sh
+> tuner1 -tuning "<csv of scientific-notation note names from low to high>"
+> ```
+>
+> For example, the following is equivalent to the `+e-standard` template:
+>
+> ```sh
+> tuner1 -tuning "E2,A2,D3,G3,B3,E4"
+> ```
 
 ## Contributing
 
