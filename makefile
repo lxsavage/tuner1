@@ -6,6 +6,8 @@ GOSUM       := go.sum
 DIST        := tuner1
 BINARY      := dist/$(DIST)
 
+.PHONY: install upgrade uninstall clean coverage
+
 # ---- Installation helpers (change if necessary) -----------------------------
 INSTALL_DIR := /usr/local/bin/
 
@@ -37,3 +39,8 @@ uninstall:
 
 clean:
 	rm -rf dist
+
+coverage:
+	@go test ./... -coverprofile=.tmp.out
+	@go tool cover -html=.tmp.out
+	@rm .tmp.out
