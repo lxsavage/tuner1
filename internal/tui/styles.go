@@ -7,15 +7,24 @@ import (
 )
 
 const (
-	green     = lipgloss.Color("#8ec07c")
-	blue      = lipgloss.Color("#558387")
+	blue      = lipgloss.Color("#458588")
 	darkGray  = lipgloss.Color("#3c3836")
-	lightGray = lipgloss.Color("#e8dcb7")
+	lightGray = lipgloss.Color("#ebdbb2")
 )
+
+var StyleCentered = lipgloss.NewStyle().Align(lipgloss.Center)
 
 var StyleActiveSpeakerSegment = statusbar.StyleDefaultSegment.
 	Background(blue)
 
-var StyleTuningHighlighted = lipgloss.NewStyle().
-	Background(blue).
-	Foreground(lightGray)
+var StyleTuningsBindingBox = lipgloss.NewStyle().
+	Border(lipgloss.NormalBorder()).
+	Padding(0, 1)
+
+var StyleStringBlock = StyleCentered.
+	Width(5).
+	Padding(0, 1)
+
+var StyleStringHighlighted = StyleStringBlock.
+	Background(lipgloss.Color(blue)).
+	Foreground(lipgloss.Color(lightGray))

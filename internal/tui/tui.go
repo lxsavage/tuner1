@@ -9,7 +9,6 @@ import (
 	"lxsavage/tuner1/internal/synth"
 	"lxsavage/tuner1/pkg/note"
 	"lxsavage/tuner1/pkg/sysexit"
-	"lxsavage/tuner1/pkg/ui_helpers"
 	"strconv"
 	"time"
 
@@ -81,7 +80,7 @@ func InitialUIModel(tuning []note.Note, a4 float64, debug bool) model {
 					statusbar.WithPosition(lipgloss.Center),
 					statusbar.WithStyle(statusbar.StyleDefaultStatusBar),
 				),
-				statusbar.Segment("version "+p_version,
+				statusbar.Segment(p_version,
 					statusbar.WithPosition(lipgloss.Right),
 				),
 			),
@@ -173,11 +172,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	title_section := m.status.View() //renderTitle(m)
-	choice_section := renderChoices(m)
+	choice_section := renderTuningBox(m)
 	keymap_section := m.help.View(m.keys)
 
 	view_box := fmt.Sprintf("%s\n\n%s\n\n%s", title_section, choice_section, keymap_section)
-	return ui_helpers.CenterBox(view_box, m.width)
+	return StyleCentered.
+		Width(m.width).
+		Render(view_box)
 }
 
 func (m *model) updatePlayStatus() {
