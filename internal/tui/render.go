@@ -12,6 +12,7 @@ const (
 	ANSI_TEXT_GRAY = "\033[1;30m"
 )
 
+// TODO - rework to use charmbracelet/lipgloss
 func renderChoices(m model) string {
 	var index_line strings.Builder
 	var note_line strings.Builder

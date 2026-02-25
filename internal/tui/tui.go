@@ -26,6 +26,11 @@ const (
 	freqSegmentId    = "s-freq"
 )
 
+const (
+	speakerMuted   = "🔇"
+	speakerPlaying = "🔊"
+)
+
 var (
 	p_version  string
 	wave_synth synth.Synth
@@ -44,7 +49,6 @@ type model struct {
 }
 
 func InitialUIModel(tuning []note.Note, a4 float64, debug bool) model {
-	// Frequency segment should only appear in debug mode
 	freqSegment := statusbar.Segment("",
 		statusbar.WithStyle(statusbar.StyleDefaultStatusBar),
 	)
@@ -59,10 +63,9 @@ func InitialUIModel(tuning []note.Note, a4 float64, debug bool) model {
 	return model{
 		status: statusbar.StatusBar(
 			statusbar.WithSegments(
-				statusbar.Segment("",
+				statusbar.Segment(speakerMuted,
 					statusbar.WithId(speakerSegmentId),
 					statusbar.WithPosition(lipgloss.Left),
-					statusbar.WithStyle(statusbar.StyleDefaultStatusBar),
 				),
 				freqSegment,
 				statusbar.Segment("tuner1",
@@ -126,13 +129,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.selected = m.cursor
 				selection_changed = true
 			}
-		case key.Matches(msg, m.keys.Help):
-			m.help.ShowAll = !m.help.ShowAll
-		}
-
-		// TODO - see if these can be added to other switch
-		switch msg.String() {
-		case "1", "2", "3", "4", "5", "6", "7", "8", "9":
+		case key.Matches(msg, m.keys.JumpToString):
 			num, err := strconv.Atoi(msg.String())
 			if err != nil {
 				break
@@ -142,6 +139,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.selected = num - 1
 				selection_changed = true
 			}
+		case key.Matches(msg, m.keys.Help):
+			m.help.ShowAll = !m.help.ShowAll
 		}
 	}
 
@@ -157,9 +156,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		wave_synth.SetWaveFrequency(new_freq)
+		m.updatePlayStatus()
 	}
 
-	m.updateStatus()
 	return m, nil
 }
 
@@ -172,31 +171,31 @@ func (m model) View() string {
 	return ui_helpers.CenterBox(view_box, m.width)
 }
 
-func (m *model) updateStatus() {
-	if m.selected >= 0 {
+func (m *model) updatePlayStatus() {
+	if m.selected == -1 {
 		m.status.AddSegmentOptionsById(speakerSegmentId,
-			statusbar.WithText("🔊"),
-			statusbar.WithStyle(StyleActiveSpeakerSegment),
-		)
-
-		freq, err := m.choices[m.selected].PitchOf(m.a4)
-		if err != nil {
-			return
-		}
-
-		m.status.AddSegmentOptionsById(freqSegmentId,
-			statusbar.WithText(fmt.Sprintf("Note frequency: %.2f Hz", freq)),
-		)
-	} else {
-		m.status.AddSegmentOptionsById(speakerSegmentId,
-			statusbar.WithText("🔇"),
+			statusbar.WithText(speakerMuted),
 			statusbar.WithStyle(statusbar.StyleDefaultSegment),
 		)
 		m.status.AddSegmentOptionsById(freqSegmentId,
 			statusbar.WithText("Note frequency: 0 Hz"),
 		)
+		return
 	}
 
+	m.status.AddSegmentOptionsById(speakerSegmentId,
+		statusbar.WithText(speakerPlaying),
+		statusbar.WithStyle(StyleActiveSpeakerSegment),
+	)
+
+	freq, err := m.choices[m.selected].PitchOf(m.a4)
+	if err != nil {
+		return
+	}
+
+	m.status.AddSegmentOptionsById(freqSegmentId,
+		statusbar.WithText(fmt.Sprintf("Note frequency: %.2f Hz", freq)),
+	)
 }
 
 func StartTUI(d Config) error {

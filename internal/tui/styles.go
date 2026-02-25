@@ -15,3 +15,7 @@ const (
 
 var StyleActiveSpeakerSegment = statusbar.StyleDefaultSegment.
 	Background(blue)
+
+var StyleTuningHighlighted = lipgloss.NewStyle().
+	Background(blue).
+	Foreground(lightGray)
