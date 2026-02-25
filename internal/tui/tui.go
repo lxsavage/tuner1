@@ -27,8 +27,24 @@ const (
 )
 
 const (
-	speakerMuted   = "🔇"
 	speakerPlaying = "🔊"
+	speakerMuted   = "🔇"
+)
+
+var (
+	segmentActiveSpeaker = statusbar.Segment(speakerPlaying,
+		statusbar.WithId(speakerSegmentId),
+		statusbar.WithStyle(StyleActiveSpeakerSegment),
+	)
+	segmentMutedSpeaker = statusbar.Segment(speakerMuted,
+		statusbar.WithId(speakerSegmentId),
+		statusbar.WithStyle(statusbar.StyleDefaultSegment),
+	)
+	segmentNoFrequency = statusbar.Segment("Frequency: 0 Hz",
+		statusbar.WithId(freqSegmentId),
+		statusbar.WithPosition(lipgloss.Left),
+		statusbar.WithStyle(statusbar.StyleDefaultStatusBar.Padding(0, 1)),
+	)
 )
 
 var (
@@ -53,20 +69,13 @@ func InitialUIModel(tuning []note.Note, a4 float64, debug bool) model {
 		statusbar.WithStyle(statusbar.StyleDefaultStatusBar),
 	)
 	if debug {
-		freqSegment = statusbar.Segment("Frequency: 0 Hz",
-			statusbar.WithId(freqSegmentId),
-			statusbar.WithPosition(lipgloss.Left),
-			statusbar.WithStyle(statusbar.StyleDefaultStatusBar.Padding(0, 1)),
-		)
+		freqSegment = segmentNoFrequency
 	}
 
 	return model{
 		status: statusbar.StatusBar(
 			statusbar.WithSegments(
-				statusbar.Segment(speakerMuted,
-					statusbar.WithId(speakerSegmentId),
-					statusbar.WithPosition(lipgloss.Left),
-				),
+				segmentMutedSpeaker,
 				freqSegment,
 				statusbar.Segment("tuner1",
 					statusbar.WithPosition(lipgloss.Center),
@@ -173,20 +182,12 @@ func (m model) View() string {
 
 func (m *model) updatePlayStatus() {
 	if m.selected == -1 {
-		m.status.AddSegmentOptionsById(speakerSegmentId,
-			statusbar.WithText(speakerMuted),
-			statusbar.WithStyle(statusbar.StyleDefaultSegment),
-		)
-		m.status.AddSegmentOptionsById(freqSegmentId,
-			statusbar.WithText("Note frequency: 0 Hz"),
-		)
+		m.status.SetSegmentById(speakerSegmentId, segmentMutedSpeaker)
+		m.status.SetSegmentById(freqSegmentId, segmentNoFrequency)
 		return
 	}
 
-	m.status.AddSegmentOptionsById(speakerSegmentId,
-		statusbar.WithText(speakerPlaying),
-		statusbar.WithStyle(StyleActiveSpeakerSegment),
-	)
+	m.status.SetSegmentById(speakerSegmentId, segmentActiveSpeaker)
 
 	freq, err := m.choices[m.selected].PitchOf(m.a4)
 	if err != nil {
