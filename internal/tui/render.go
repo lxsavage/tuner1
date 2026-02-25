@@ -12,25 +12,6 @@ const (
 	ANSI_TEXT_GRAY = "\033[1;30m"
 )
 
-func renderTitle(m model) string {
-	title_text := "tuner1"
-
-	if m.selected >= 0 {
-		title_text += " 📢"
-
-		if m.debug {
-			freq, err := m.choices[m.selected].PitchOf(m.a4)
-			if err != nil {
-				panic(err)
-			}
-
-			title_text += fmt.Sprintf(" - Note frequency: %.2f Hz", freq)
-		}
-	}
-
-	return title_text + "\n" + p_version
-}
-
 func renderChoices(m model) string {
 	var index_line strings.Builder
 	var note_line strings.Builder

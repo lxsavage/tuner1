@@ -5,18 +5,25 @@ import (
 	"fmt"
 	"log"
 	"lxsavage/tuner1/internal/common"
+	"lxsavage/tuner1/internal/statusbar"
 	"lxsavage/tuner1/internal/synth"
+	"lxsavage/tuner1/pkg/note"
 	"lxsavage/tuner1/pkg/sysexit"
 	"lxsavage/tuner1/pkg/ui_helpers"
-	"os"
 	"strconv"
 	"time"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/x/term"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/gopxl/beep"
 	"github.com/gopxl/beep/speaker"
+)
+
+const (
+	speakerSegmentId = "s-speaker"
+	freqSegmentId    = "s-freq"
 )
 
 var (
@@ -24,13 +31,68 @@ var (
 	wave_synth synth.Synth
 )
 
+type model struct {
+	width    int
+	status   statusbar.Model
+	choices  []note.Note
+	help     help.Model
+	keys     keyMap
+	cursor   int
+	selected int
+	a4       float64
+	debug    bool
+}
+
+func InitialUIModel(tuning []note.Note, a4 float64, debug bool) model {
+	// Frequency segment should only appear in debug mode
+	freqSegment := statusbar.Segment("",
+		statusbar.WithStyle(statusbar.StyleDefaultStatusBar),
+	)
+	if debug {
+		freqSegment = statusbar.Segment("Frequency: 0 Hz",
+			statusbar.WithId(freqSegmentId),
+			statusbar.WithPosition(lipgloss.Left),
+			statusbar.WithStyle(statusbar.StyleDefaultStatusBar.Padding(0, 1)),
+		)
+	}
+
+	return model{
+		status: statusbar.StatusBar(
+			statusbar.WithSegments(
+				statusbar.Segment("",
+					statusbar.WithId(speakerSegmentId),
+					statusbar.WithPosition(lipgloss.Left),
+					statusbar.WithStyle(statusbar.StyleDefaultStatusBar),
+				),
+				freqSegment,
+				statusbar.Segment("tuner1",
+					statusbar.WithPosition(lipgloss.Center),
+					statusbar.WithStyle(statusbar.StyleDefaultStatusBar),
+				),
+				statusbar.Segment("version "+p_version,
+					statusbar.WithPosition(lipgloss.Right),
+				),
+			),
+		),
+		choices:  tuning,
+		help:     help.New(),
+		keys:     keys,
+		cursor:   0,
+		selected: -1, // -1 denotes muted
+		a4:       a4,
+		debug:    debug,
+	}
+}
 func (m model) Init() tea.Cmd {
-	return nil
+	return tea.WindowSize()
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	selection_changed := false
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.status.SetWidth(m.width)
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.Quit):
@@ -97,21 +159,44 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		wave_synth.SetWaveFrequency(new_freq)
 	}
 
+	m.updateStatus()
 	return m, nil
 }
 
 func (m model) View() string {
-	term_col_count, _, err := term.GetSize(os.Stdout.Fd())
-	if err != nil {
-		panic(err)
-	}
-
-	title_section := renderTitle(m)
+	title_section := m.status.View() //renderTitle(m)
 	choice_section := renderChoices(m)
 	keymap_section := m.help.View(m.keys)
 
 	view_box := fmt.Sprintf("%s\n\n%s\n\n%s", title_section, choice_section, keymap_section)
-	return ui_helpers.CenterBox(view_box, term_col_count)
+	return ui_helpers.CenterBox(view_box, m.width)
+}
+
+func (m *model) updateStatus() {
+	if m.selected >= 0 {
+		m.status.AddSegmentOptionsById(speakerSegmentId,
+			statusbar.WithText("🔊"),
+			statusbar.WithStyle(StyleActiveSpeakerSegment),
+		)
+
+		freq, err := m.choices[m.selected].PitchOf(m.a4)
+		if err != nil {
+			return
+		}
+
+		m.status.AddSegmentOptionsById(freqSegmentId,
+			statusbar.WithText(fmt.Sprintf("Note frequency: %.2f Hz", freq)),
+		)
+	} else {
+		m.status.AddSegmentOptionsById(speakerSegmentId,
+			statusbar.WithText("🔇"),
+			statusbar.WithStyle(statusbar.StyleDefaultSegment),
+		)
+		m.status.AddSegmentOptionsById(freqSegmentId,
+			statusbar.WithText("Note frequency: 0 Hz"),
+		)
+	}
+
 }
 
 func StartTUI(d Config) error {
