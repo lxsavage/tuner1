@@ -30,7 +30,7 @@ func (k keyMap) FullHelp() [][]key.Binding {
 var keys = keyMap{
 	JumpToString: key.NewBinding(
 		key.WithKeys("1", "2", "3", "4", "5", "6", "7", "8", "9"),
-		key.WithHelp("0..9", "jump to string 0..9"),
+		key.WithHelp("1..9", "jump to string 1..9"),
 	),
 	Next: key.NewBinding(
 		key.WithKeys("up", "k"),
