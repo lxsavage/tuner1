@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/term"
 	"github.com/gopxl/beep"
@@ -31,18 +32,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	selection_changed := false
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q":
+		switch {
+		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
-		case "m":
+		case key.Matches(msg, m.keys.Mute):
 			if m.selected != -1 {
 				m.selected = -1
 				selection_changed = true
 			}
-		case "up", "k":
+		case key.Matches(msg, m.keys.Next):
 			m.selected = max((m.selected+1)%len(m.choices), 0)
 			selection_changed = true
-		case "down", "j":
+		case key.Matches(msg, m.keys.Previous):
 			if m.selected < 0 {
 				m.selected = len(m.choices) - 1
 			} else {
@@ -50,14 +51,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			selection_changed = true
-		case "left", "h":
+		case key.Matches(msg, m.keys.Left):
 			if m.cursor > 0 {
 				m.cursor--
 			}
-		case "right", "l":
+		case key.Matches(msg, m.keys.Right):
 			if m.cursor < len(m.choices)-1 {
 				m.cursor++
 			}
+		case key.Matches(msg, m.keys.Select):
+			if m.selected != m.cursor {
+				m.selected = m.cursor
+				selection_changed = true
+			}
+		case key.Matches(msg, m.keys.Help):
+			m.help.ShowAll = !m.help.ShowAll
+		}
+
+		// TODO - see if these can be added to other switch
+		switch msg.String() {
 		case "1", "2", "3", "4", "5", "6", "7", "8", "9":
 			num, err := strconv.Atoi(msg.String())
 			if err != nil {
@@ -66,11 +78,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			if num <= len(m.choices) {
 				m.selected = num - 1
-				selection_changed = true
-			}
-		case "enter", " ":
-			if m.selected != m.cursor {
-				m.selected = m.cursor
 				selection_changed = true
 			}
 		}
@@ -101,7 +108,7 @@ func (m model) View() string {
 
 	title_section := renderTitle(m)
 	choice_section := renderChoices(m)
-	keymap_section := renderKeymap(m)
+	keymap_section := m.help.View(m.keys)
 
 	view_box := fmt.Sprintf("%s\n\n%s\n\n%s", title_section, choice_section, keymap_section)
 	return ui_helpers.CenterBox(view_box, term_col_count)

@@ -3,7 +3,6 @@ package tui
 import (
 	"fmt"
 	"lxsavage/tuner1/pkg/ui_helpers"
-	"strconv"
 	"strings"
 )
 
@@ -56,17 +55,4 @@ func renderChoices(m model) string {
 
 	choice_box := fmt.Sprintf("%s\n%s\n%s", index_line.String(), note_line.String(), interaction_line.String())
 	return ui_helpers.WrapBox(choice_box, 1, 0)
-}
-
-func renderKeymap(m model) string {
-	var instructions_text strings.Builder
-	instructions_text.WriteRune('[')
-	for i := range m.choices {
-		instructions_text.WriteString(strconv.Itoa(i + 1))
-	}
-
-	instructions_text.WriteString("] - select string by #, [↑ ↓/jk] - next/previous string\n")
-	instructions_text.WriteString("[← →/hl] - move, [space/enter] - select, m - mute, q - quit\n")
-
-	return instructions_text.String()
 }
