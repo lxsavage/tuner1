@@ -6,9 +6,9 @@ import (
 )
 
 func renderTuningBox(m model) string {
-	var index_line strings.Builder
-	var note_line strings.Builder
-	var interaction_line strings.Builder
+	var stringNumberLine strings.Builder
+	var noteNameLine strings.Builder
+	var activeDotLine strings.Builder
 
 	for i, choice := range m.choices {
 		top := fmt.Sprintf("%d", i+1)
@@ -29,16 +29,16 @@ func renderTuningBox(m model) string {
 			bottom = StyleStringBlock.Render(bottom)
 		}
 
-		index_line.WriteString(top)
-		note_line.WriteString(middle)
-		interaction_line.WriteString(bottom)
+		stringNumberLine.WriteString(top)
+		noteNameLine.WriteString(middle)
+		activeDotLine.WriteString(bottom)
 	}
 
 	return StyleTuningsBindingBox.Render(
 		fmt.Sprintf("%s\n%s\n%s",
-			index_line.String(),
-			note_line.String(),
-			interaction_line.String(),
+			stringNumberLine.String(),
+			noteNameLine.String(),
+			activeDotLine.String(),
 		),
 	)
 }

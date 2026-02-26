@@ -5,33 +5,33 @@ import (
 	"sync"
 )
 
-type sine_synth struct {
-	current_sample_rate float64 // Hz
-	freq                float64 // Hz
-	mu_freq             sync.RWMutex
-	pos                 int
+type sineSynth struct {
+	currentSampleRate float64 // Hz
+	freq              float64 // Hz
+	freqMu            sync.RWMutex
+	pos               int
 }
 
-func NewSineSynth(sample_rate, freq float64) Synth {
-	return &sine_synth{
-		current_sample_rate: sample_rate,
-		freq:                freq,
+func NewSineSynth(sampleRate, freq float64) Synth {
+	return &sineSynth{
+		currentSampleRate: sampleRate,
+		freq:              freq,
 	}
 }
 
-func (ss *sine_synth) SetWaveFrequency(new_freq float64) {
-	ss.mu_freq.Lock()
-	ss.freq = new_freq
-	ss.mu_freq.Unlock()
+func (ss *sineSynth) SetWaveFrequency(freq float64) {
+	ss.freqMu.Lock()
+	ss.freq = freq
+	ss.freqMu.Unlock()
 }
 
-func (ss *sine_synth) SynthesizeWave(samples [][2]float64) (int, bool) {
-	ss.mu_freq.RLock()
+func (ss *sineSynth) SynthesizeWave(samples [][2]float64) (int, bool) {
+	ss.freqMu.RLock()
 	f := ss.freq
-	ss.mu_freq.RUnlock()
+	ss.freqMu.RUnlock()
 
 	for i := range samples {
-		v := math.Sin(2 * math.Pi * float64(ss.pos) * f / ss.current_sample_rate)
+		v := math.Sin(2 * math.Pi * float64(ss.pos) * f / ss.currentSampleRate)
 		samples[i][0] = v
 		samples[i][1] = v
 		ss.pos++
@@ -40,6 +40,6 @@ func (ss *sine_synth) SynthesizeWave(samples [][2]float64) (int, bool) {
 	return len(samples), true
 }
 
-func (ss *sine_synth) GetSampleRate() float64 {
-	return ss.current_sample_rate
+func (ss *sineSynth) GetSampleRate() float64 {
+	return ss.currentSampleRate
 }

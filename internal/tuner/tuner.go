@@ -16,10 +16,10 @@ import (
 	"strings"
 )
 
-const sample_rate = 44100 // Hz
+const a4 = 44100 // Hz
 
 func getStandardsConfigFilepath() (string, error) {
-	config_dir, err := os.UserConfigDir()
+	configDir, err := os.UserConfigDir()
 	if err != nil {
 		return "", common.ExitError{
 			Code:    sysexit.EX_IOERR,
@@ -27,22 +27,22 @@ func getStandardsConfigFilepath() (string, error) {
 		}
 	}
 
-	return filepath.Join(config_dir, "tuner1", "standards.txt"), nil
+	return filepath.Join(configDir, "tuner1", "standards.txt"), nil
 }
 
-func getStandardsFileContents(path_std_file string) ([]string, error) {
-	var res []string
+func getStandardsFileContents(stdFilePath string) ([]string, error) {
 
-	std_file, err := os.Open(path_std_file)
+	stdFile, err := os.Open(stdFilePath)
 	if err != nil {
 		return nil, common.ExitError{
 			Code:    sysexit.EX_IOERR,
 			Message: "Failed to open standards file: " + err.Error(),
 		}
 	}
-	defer std_file.Close()
+	defer stdFile.Close()
 
-	sc := bufio.NewScanner(std_file)
+	var res []string
+	sc := bufio.NewScanner(stdFile)
 	for sc.Scan() {
 		line := strings.TrimSpace(sc.Text())
 		if len(line) == 0 {
@@ -55,8 +55,8 @@ func getStandardsFileContents(path_std_file string) ([]string, error) {
 	return res, nil
 }
 
-func listTemplates(path_std_file string) error {
-	standards, err := getStandardsFileContents(path_std_file)
+func listTemplates(stdFilePath string) error {
+	standards, err := getStandardsFileContents(stdFilePath)
 	if err != nil {
 		return common.ExitError{
 			Code:    sysexit.EX_IOERR,
@@ -74,30 +74,30 @@ func Execute(d Config) error {
 		return nil
 	}
 
-	is_template := len(d.TuningTemplate) > 0 && (d.TuningTemplate)[0] == '+'
-	should_use_default_std_file := d.EditStandards || d.ListTemplates || is_template
+	isTemplate := len(d.TuningTemplate) > 0 && (d.TuningTemplate)[0] == '+'
+	shouldUseDefaultStdFile := d.EditStandards || d.ListTemplates || isTemplate
 
-	path_std_file := d.StandardsPath
-	if should_use_default_std_file && len(path_std_file) == 0 {
+	stdFilePath := d.StandardsPath
+	if shouldUseDefaultStdFile && len(stdFilePath) == 0 {
 		var err error
-		path_std_file, err = getStandardsConfigFilepath()
+		stdFilePath, err = getStandardsConfigFilepath()
 		if err != nil {
 			return err
 		}
 	}
 
 	if d.ListTemplates {
-		return listTemplates(path_std_file)
+		return listTemplates(stdFilePath)
 	}
 
 	if d.EditStandards {
-		if err := editor.EditFile(path_std_file); err != nil {
+		if err := editor.EditFile(stdFilePath); err != nil {
 			if errors.Is(err, os.ErrNotExist) {
 				return common.ExitError{
 					Code: sysexit.EX_IOERR,
 					Message: fmt.Sprintf("Unable to find standards file at \"%s\"; "+
 						"perform a reinstall with the script to get the default one",
-						path_std_file),
+						stdFilePath),
 				}
 			}
 			return common.ExitError{
@@ -116,9 +116,10 @@ func Execute(d Config) error {
 		}
 	}
 
-	tuning_csv := d.TuningTemplate
+	tuningName := "user-defined tuning"
+	rawTuning := d.TuningTemplate
 	if (d.TuningTemplate)[0] == '+' {
-		standards, err := getStandardsFileContents(path_std_file)
+		standards, err := getStandardsFileContents(stdFilePath)
 		if err != nil {
 			return common.ExitError{
 				Code:    sysexit.EX_IOERR,
@@ -126,7 +127,7 @@ func Execute(d Config) error {
 			}
 		}
 
-		csv, err := getStandard(standards, d.TuningTemplate)
+		standardRawTuning, err := getStandard(standards, d.TuningTemplate)
 		if err != nil {
 			return common.ExitError{
 				Code:    sysexit.EX_DATAERR,
@@ -134,10 +135,11 @@ func Execute(d Config) error {
 			}
 		}
 
-		tuning_csv = csv
+		tuningName = d.TuningTemplate
+		rawTuning = standardRawTuning
 	}
 
-	tunings, err := getTuning(tuning_csv)
+	stringNotes, err := getTuning(rawTuning)
 	if err != nil {
 		return common.ExitError{
 			Code:    sysexit.EX_CONFIG,
@@ -146,10 +148,11 @@ func Execute(d Config) error {
 	}
 
 	return tui.StartTUI(tui.Config{
-		A4:        d.A4,
-		Version:   d.ProgramVersion,
-		Tunings:   tunings,
-		Synth:     synth.NewSynth(d.WaveType, sample_rate),
-		DebugMode: d.DebugMode,
+		A4:          d.A4,
+		Version:     d.ProgramVersion,
+		StringNotes: stringNotes,
+		TuningName:  tuningName,
+		Synth:       synth.NewSynth(d.WaveType, a4),
+		DebugMode:   d.DebugMode,
 	})
 }

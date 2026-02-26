@@ -19,14 +19,14 @@ func TestNewNoteValid(t *testing.T) {
 }
 
 func TestNewNoteInvalidNote(t *testing.T) {
-	want_str := "invalid note name"
+	wantStr := "invalid note name"
 	of, err := New("H", 4)
 	if err == nil {
-		t.Fatalf("New(\"H\", 4) = %s; want contains(error(...), \"%s\")", of, want_str)
+		t.Fatalf("New(\"H\", 4) = %s; want contains(error(...), \"%s\")", of, wantStr)
 	}
 
-	if !strings.Contains(err.Error(), want_str) {
-		t.Fatalf("New(\"H\", 4) = error(\"%s\"); want contains(error(...), \"%s\")", err.Error(), want_str)
+	if !strings.Contains(err.Error(), wantStr) {
+		t.Fatalf("New(\"H\", 4) = error(\"%s\"); want contains(error(...), \"%s\")", err.Error(), wantStr)
 	}
 }
 

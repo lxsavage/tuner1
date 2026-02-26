@@ -39,16 +39,16 @@ var (
 		statusbar.WithId(speakerSegmentId),
 		statusbar.WithStyle(statusbar.StyleDefaultSegment),
 	)
-	segmentNoFrequency = statusbar.Segment("Frequency: 0 Hz",
+	segmentNoFrequency = statusbar.Segment("Note Frequency: 0.00 Hz",
 		statusbar.WithId(freqSegmentId),
 		statusbar.WithPosition(lipgloss.Left),
-		statusbar.WithStyle(statusbar.StyleDefaultStatusBar.Padding(0, 1)),
+		statusbar.WithStyle(StyleSegmentNoBg),
 	)
 )
 
 var (
-	p_version  string
-	wave_synth synth.Synth
+	programVersion string
+	waveSynth      synth.Synth
 )
 
 type model struct {
@@ -63,7 +63,7 @@ type model struct {
 	debug    bool
 }
 
-func InitialUIModel(tuning []note.Note, a4 float64, debug bool) model {
+func InitialUIModel(tuning []note.Note, a4 float64, tuningName string, debug bool) model {
 	freqSegment := statusbar.Segment("",
 		statusbar.WithStyle(statusbar.StyleDefaultStatusBar),
 	)
@@ -80,7 +80,11 @@ func InitialUIModel(tuning []note.Note, a4 float64, debug bool) model {
 					statusbar.WithPosition(lipgloss.Center),
 					statusbar.WithStyle(statusbar.StyleDefaultStatusBar),
 				),
-				statusbar.Segment(p_version,
+				statusbar.Segment(tuningName,
+					statusbar.WithPosition(lipgloss.Right),
+					statusbar.WithStyle(StyleSegmentNoBg),
+				),
+				statusbar.Segment(programVersion,
 					statusbar.WithPosition(lipgloss.Right),
 				),
 			),
@@ -99,7 +103,7 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	selection_changed := false
+	selectionChanged := false
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -111,11 +115,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Mute):
 			if m.selected != -1 {
 				m.selected = -1
-				selection_changed = true
+				selectionChanged = true
 			}
 		case key.Matches(msg, m.keys.Next):
 			m.selected = max((m.selected+1)%len(m.choices), 0)
-			selection_changed = true
+			selectionChanged = true
 		case key.Matches(msg, m.keys.Previous):
 			if m.selected < 0 {
 				m.selected = len(m.choices) - 1
@@ -123,7 +127,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.selected = (m.selected - 1 + len(m.choices)) % len(m.choices)
 			}
 
-			selection_changed = true
+			selectionChanged = true
 		case key.Matches(msg, m.keys.Left):
 			if m.cursor > 0 {
 				m.cursor--
@@ -135,7 +139,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Select):
 			if m.selected != m.cursor {
 				m.selected = m.cursor
-				selection_changed = true
+				selectionChanged = true
 			}
 		case key.Matches(msg, m.keys.JumpToString):
 			num, err := strconv.Atoi(msg.String())
@@ -145,25 +149,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			if num <= len(m.choices) {
 				m.selected = num - 1
-				selection_changed = true
+				selectionChanged = true
 			}
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 		}
 	}
 
-	if selection_changed && m.selected < len(m.choices) {
-		var new_freq float64 = 0
+	if selectionChanged && m.selected < len(m.choices) {
+		var newFreq float64 = 0
 		if m.selected >= 0 {
 			var err error
-			new_freq, err = m.choices[m.selected].PitchOf(m.a4)
+			newFreq, err = m.choices[m.selected].PitchOf(m.a4)
 
 			if err != nil {
 				log.Fatal(err)
 			}
 		}
 
-		wave_synth.SetWaveFrequency(new_freq)
+		waveSynth.SetWaveFrequency(newFreq)
 		m.updatePlayStatus()
 	}
 
@@ -171,14 +175,37 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	title_section := m.status.View() //renderTitle(m)
-	choice_section := renderTuningBox(m)
-	keymap_section := m.help.View(m.keys)
+	viewBox := fmt.Sprintf("%s\n\n%s\n\n%s",
+		m.status.View(),
+		renderTuningBox(m),
+		m.help.View(m.keys),
+	)
 
-	view_box := fmt.Sprintf("%s\n\n%s\n\n%s", title_section, choice_section, keymap_section)
 	return StyleCentered.
 		Width(m.width).
-		Render(view_box)
+		Render(viewBox)
+}
+
+func StartTUI(d Config) error {
+	programVersion = d.Version
+	waveSynth = d.Synth
+
+	sr := beep.SampleRate(waveSynth.GetSampleRate())
+	streamer := beep.StreamerFunc(waveSynth.SynthesizeWave)
+
+	speaker.Init(sr, sr.N(time.Second/10))
+	speaker.Play(streamer)
+	defer speaker.Close()
+
+	tui := tea.NewProgram(InitialUIModel(d.StringNotes, d.A4, d.TuningName, d.DebugMode), tea.WithAltScreen())
+	if _, err := tui.Run(); err != nil {
+		return common.ExitError{
+			Code:    sysexit.EX_SOFTWARE,
+			Message: fmt.Sprintf("Critial error when running the tuner1 TUI:\n%s", err),
+		}
+	}
+
+	return nil
 }
 
 func (m *model) updatePlayStatus() {
@@ -198,26 +225,4 @@ func (m *model) updatePlayStatus() {
 	m.status.AddSegmentOptionsById(freqSegmentId,
 		statusbar.WithText(fmt.Sprintf("Note frequency: %.2f Hz", freq)),
 	)
-}
-
-func StartTUI(d Config) error {
-	p_version = d.Version
-	wave_synth = d.Synth
-
-	sr := beep.SampleRate(wave_synth.GetSampleRate())
-	streamer := beep.StreamerFunc(wave_synth.SynthesizeWave)
-
-	speaker.Init(sr, sr.N(time.Second/10))
-	speaker.Play(streamer)
-	defer speaker.Close()
-
-	tui := tea.NewProgram(InitialUIModel(d.Tunings, d.A4, d.DebugMode), tea.WithAltScreen())
-	if _, err := tui.Run(); err != nil {
-		return common.ExitError{
-			Code:    sysexit.EX_SOFTWARE,
-			Message: fmt.Sprintf("Critial error when running the tuner1 TUI:\n%s", err),
-		}
-	}
-
-	return nil
 }

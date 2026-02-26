@@ -7,8 +7,8 @@ import (
 	"runtime"
 )
 
-func EditFile(path_std_file string) error {
-	if _, err := os.Stat(path_std_file); err != nil {
+func EditFile(stdFilePath string) error {
+	if _, err := os.Stat(stdFilePath); err != nil {
 		return err
 	}
 
@@ -17,18 +17,18 @@ func EditFile(path_std_file string) error {
 
 	if editor := os.Getenv("EDITOR"); len(editor) != 0 {
 		cmd = editor
-		args = []string{path_std_file}
+		args = []string{stdFilePath}
 	} else {
 		switch runtime.GOOS {
 		case "windows":
 			cmd = "cmd"
-			args = []string{"/c", "start", "", path_std_file}
+			args = []string{"/c", "start", "", stdFilePath}
 		case "darwin":
 			cmd = "open"
-			args = []string{"-t", path_std_file}
+			args = []string{"-t", stdFilePath}
 		default:
 			cmd = "xdg-open"
-			args = []string{path_std_file}
+			args = []string{stdFilePath}
 		}
 	}
 	proc := exec.Command(cmd, args...)

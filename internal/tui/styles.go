@@ -12,6 +12,9 @@ const (
 	lightGray = lipgloss.Color("#ebdbb2")
 )
 
+var StyleSegmentNoBg = statusbar.StyleDefaultStatusBar.
+	Padding(0, 1)
+
 var StyleCentered = lipgloss.NewStyle().Align(lipgloss.Center)
 
 var StyleActiveSpeakerSegment = statusbar.StyleDefaultSegment.

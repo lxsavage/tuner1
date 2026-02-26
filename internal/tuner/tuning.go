@@ -10,7 +10,7 @@ import (
 )
 
 // A scientific-notation note is in the format <Note uppercase><accidental?><octave number>, i.e., C#4
-var re_valid_note = regexp.MustCompile(`^([A-G][#b]?)(\d+)`)
+var validNoteRegexp = regexp.MustCompile(`^([A-G][#b]?)(\d+)`)
 
 func sprintStandards(standards []string) string {
 	var result strings.Builder
@@ -46,18 +46,18 @@ func getStandard(standards []string, name string) (string, error) {
 	return "", fmt.Errorf("standard +%s not found", check)
 }
 
-func getTuning(tuning_csv string) ([]note.Note, error) {
-	tunings_raw := strings.Split(tuning_csv, ",")
-	var tunings []note.Note
-	for _, note_name := range tunings_raw {
-		matches := re_valid_note.FindStringSubmatch(note_name)
+func getTuning(rawTuning string) ([]note.Note, error) {
+	rawTuningNotes := strings.Split(rawTuning, ",")
+	var resultNotes []note.Note
+	for _, noteName := range rawTuningNotes {
+		matches := validNoteRegexp.FindStringSubmatch(noteName)
 		if len(matches) != 3 {
-			msg := "invalid note: " + note_name
-			if len(note_name) > 0 && (note_name[0] < 65 /*A*/ || note_name[0] > 71 /*G*/) {
+			msg := "invalid note: " + noteName
+			if len(noteName) > 0 && (noteName[0] < 65 /*A*/ || noteName[0] > 71 /*G*/) {
 				msg += "\n- The note name must be represented by an uppercase A-G"
 			}
 
-			if len(note_name) > 1 && strings.Contains(note_name[1:], "B") {
+			if len(noteName) > 1 && strings.Contains(noteName[1:], "B") {
 				msg += "\n- A flat accidental must be represented by a lowercase \"b\""
 			}
 			return nil, errors.New(msg)
@@ -71,14 +71,14 @@ func getTuning(tuning_csv string) ([]note.Note, error) {
 			return nil, err
 		}
 
-		new_note, err := note.New(pitch, uint(octave))
+		resultNote, err := note.New(pitch, uint(octave))
 		if err != nil {
 			// Added as a safety net, negative octaves are not possible due to the regexp
 			return nil, err
 		}
 
-		tunings = append(tunings, new_note)
+		resultNotes = append(resultNotes, resultNote)
 	}
 
-	return tunings, nil
+	return resultNotes, nil
 }

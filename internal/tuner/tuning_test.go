@@ -51,14 +51,14 @@ func TestGetStandardNotExists(t *testing.T) {
 		"c-standard:C2,F2,Bb2,Eb3,G3,C4",
 	}
 	name := "+eb-standard-7"
-	want_err := "standard " + name + " not found"
+	wantErr := "standard " + name + " not found"
 	of, err := getStandard(standards, name)
 	if err == nil {
-		t.Fatalf("getStandard(\"...\") = %s\nwant contains(error(...),\"%s\")", of, want_err)
+		t.Fatalf("getStandard(\"...\") = %s\nwant contains(error(...),\"%s\")", of, wantErr)
 	}
 
-	if !strings.Contains(err.Error(), want_err) {
-		t.Fatalf("getStandard(\"...\") = error(\"%s\")\nwant contains(error(...),\"%s\")", err.Error(), want_err)
+	if !strings.Contains(err.Error(), wantErr) {
+		t.Fatalf("getStandard(\"...\") = error(\"%s\")\nwant contains(error(...),\"%s\")", err.Error(), wantErr)
 	}
 }
 
@@ -70,15 +70,15 @@ func TestGetStandardIllegalDefinition(t *testing.T) {
 		"c-standard:C2,F2,Bb2,Eb3,G3,C4",
 	}
 	name := "+eb-standard-7"
-	want_err := "illegal standard definition"
+	wantErr := "illegal standard definition"
 	of, err := getStandard(standards, name)
 
 	if err == nil {
 		t.Fatalf("getStandard(\"...\") = %s\nwant error()", of)
 	}
 
-	if !strings.Contains(err.Error(), want_err) {
-		t.Fatalf("getStandard(\"...\") = %s\nwant contains(error(...),\"%s\")", of, want_err)
+	if !strings.Contains(err.Error(), wantErr) {
+		t.Fatalf("getStandard(\"...\") = %s\nwant contains(error(...),\"%s\")", of, wantErr)
 	}
 }
 
@@ -92,87 +92,87 @@ func TestGetTuningValid(t *testing.T) {
 		{Pitch: "E", Octave: 4},
 	}
 
-	var want_str strings.Builder
-	want_str.WriteString("[\n")
+	var wantStr strings.Builder
+	wantStr.WriteString("[\n")
 	for _, note := range want {
-		want_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
+		wantStr.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
 	}
-	want_str.WriteRune(']')
+	wantStr.WriteRune(']')
 
 	of, err := getTuning(csv)
 	if err != nil {
-		t.Fatalf("getTuning(\"%s\") = error(\"%s\"), want %s", csv, err, want_str.String())
+		t.Fatalf("getTuning(\"%s\") = error(\"%s\"), want %s", csv, err, wantStr.String())
 	}
 
 	if !reflect.DeepEqual(of, want) {
-		var of_str strings.Builder
+		var ofStr strings.Builder
 
-		of_str.WriteString("[\n")
+		ofStr.WriteString("[\n")
 		for _, note := range of {
-			of_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
+			ofStr.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
 		}
-		of_str.WriteRune(']')
+		ofStr.WriteRune(']')
 
-		t.Fatalf("getTuning(\"%s\") = %s\nwant %s", csv, of_str.String(), want_str.String())
+		t.Fatalf("getTuning(\"%s\") = %s\nwant %s", csv, ofStr.String(), wantStr.String())
 	}
 }
 
 func TestGetTuningInvalidNoteName(t *testing.T) {
 	csv := "H4"
-	want_err := "\n- The note name must be represented by an uppercase A-G"
+	wantErr := "\n- The note name must be represented by an uppercase A-G"
 
 	of, err := getTuning(csv)
 	if err == nil {
-		var of_str strings.Builder
-		of_str.WriteString("[\n")
+		var ofStr strings.Builder
+		ofStr.WriteString("[\n")
 		for _, note := range of {
-			of_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
+			ofStr.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
 		}
 
-		t.Fatalf("getTuning(\"%s\") = %s\nwant contains(error(...),%s)", csv, of_str.String(), want_err)
+		t.Fatalf("getTuning(\"%s\") = %s\nwant contains(error(...),%s)", csv, ofStr.String(), wantErr)
 	}
 
-	if !strings.Contains(err.Error(), want_err) {
-		t.Fatalf("getTuning(\"%s\") = error(%s)\nwant contains(error(...),%s)", csv, err.Error(), want_err)
+	if !strings.Contains(err.Error(), wantErr) {
+		t.Fatalf("getTuning(\"%s\") = error(%s)\nwant contains(error(...),%s)", csv, err.Error(), wantErr)
 	}
 }
 
 func TestGetTuningInvalidNoteAccidentalCapitalFlat(t *testing.T) {
 	csv := "AB4"
-	want_err := "\n- A flat accidental must be represented by a lowercase \"b\""
+	wantErr := "\n- A flat accidental must be represented by a lowercase \"b\""
 
 	of, err := getTuning(csv)
 	if err == nil {
-		var of_str strings.Builder
-		of_str.WriteString("[\n")
+		var ofStr strings.Builder
+		ofStr.WriteString("[\n")
 		for _, note := range of {
-			of_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
+			ofStr.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
 		}
 
-		t.Fatalf("getTuning(\"%s\") = %s\nwant contains(error(...),%s)", csv, of_str.String(), want_err)
+		t.Fatalf("getTuning(\"%s\") = %s\nwant contains(error(...),%s)", csv, ofStr.String(), wantErr)
 	}
 
-	if !strings.Contains(err.Error(), want_err) {
-		t.Fatalf("getTuning(\"%s\") = error(%s)\nwant contains(error(...),%s)", csv, err.Error(), want_err)
+	if !strings.Contains(err.Error(), wantErr) {
+		t.Fatalf("getTuning(\"%s\") = error(%s)\nwant contains(error(...),%s)", csv, err.Error(), wantErr)
 	}
 }
 
 func TestGetTuningInvalidNoteCatchall(t *testing.T) {
 	csv := "AbE"
-	want_err := "invalid note"
+	wantErr := "invalid note"
 
 	of, err := getTuning(csv)
 	if err == nil {
-		var of_str strings.Builder
-		of_str.WriteString("[\n")
+		var ofStr strings.Builder
+		ofStr.WriteString("[\n")
 		for _, note := range of {
-			of_str.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
+			ofStr.WriteString("{pitch: " + note.Pitch + ", octave: " + strconv.Itoa(int(note.Octave)) + "}\n")
 		}
 
-		t.Fatalf("getTuning(\"%s\") = %s\nwant contains(error(...),%s)", csv, of_str.String(), want_err)
+		t.Fatalf("getTuning(\"%s\") = %s\nwant contains(error(...),%s)", csv, ofStr.String(), wantErr)
 	}
 
-	if !strings.Contains(err.Error(), want_err) {
-		t.Fatalf("getTuning(\"%s\") = error(%s)\nwant contains(error(...),%s)", csv, err.Error(), want_err)
+	if !strings.Contains(err.Error(), wantErr) {
+		t.Fatalf("getTuning(\"%s\") = error(%s)\nwant contains(error(...),%s)", csv, err.Error(), wantErr)
 	}
 }

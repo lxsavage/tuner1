@@ -3,7 +3,7 @@ package synth
 
 type Synth interface {
 	// Sets the frequency of the wave. Works while the wave is playing.
-	SetWaveFrequency(new_freq float64)
+	SetWaveFrequency(freq float64)
 
 	// Generate a wave in place in samples. Returns the amount of samples
 	// after the operation, as well as if the operation was successful.
@@ -13,18 +13,18 @@ type Synth interface {
 	GetSampleRate() float64
 }
 
-func NewSynth(wave_type string, sample_rate float64) Synth {
-	var wave_synth Synth
-	switch wave_type {
+func NewSynth(waveType string, sampleRate float64) Synth {
+	var waveSynth Synth
+	switch waveType {
 	case "square":
-		wave_synth = NewSquareSynth(sample_rate, 0)
+		waveSynth = NewSquareSynth(sampleRate, 0)
 	case "sawtooth":
-		wave_synth = NewSawtoothSynth(sample_rate, 0)
+		waveSynth = NewSawtoothSynth(sampleRate, 0)
 	case "sine":
 		fallthrough
 	default:
-		wave_synth = NewSineSynth(sample_rate, 0)
+		waveSynth = NewSineSynth(sampleRate, 0)
 	}
 
-	return wave_synth
+	return waveSynth
 }

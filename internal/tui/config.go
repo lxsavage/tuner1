@@ -6,9 +6,10 @@ import (
 )
 
 type Config struct {
-	A4        float64
-	Version   string
-	Tunings   []note.Note
-	Synth     synth.Synth
-	DebugMode bool
+	A4          float64
+	Version     string
+	TuningName  string
+	StringNotes []note.Note
+	Synth       synth.Synth
+	DebugMode   bool
 }
